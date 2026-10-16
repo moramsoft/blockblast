@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+tests/dist/
+
+# Android Gradle builds and local settings
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+android/captures/
+*.hprof
+
+# Temporary emulator screenshot captures
+emulator_*.png
+
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

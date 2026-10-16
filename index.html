@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#090d16" />
+    <title>Block Blast Star - Classic Block Puzzle</title>
+    <link rel="stylesheet" href="./src/style.css" />
+  </head>
+  <body class="theme-neon">
+    <div id="app">
+      <!-- Game Top Header -->
+      <header class="game-header">
+        <div class="top-bar">
+          <div class="logo-group">
+            <h1 class="logo-title">BLOCK BLAST</h1>
+            <span id="themeTag" class="logo-tag">NEON</span>
+            <span id="modeTag" class="mode-tag hidden">DAILY</span>
+          </div>
+          <div class="header-actions">
+            <button id="themeBtn" class="icon-btn" title="Change Theme (Neon / Wood / Candy)" aria-label="Change Theme">🎨</button>
+            <button id="dailyBtn" class="icon-btn" title="Daily Challenge & Streaks" aria-label="Daily Challenge">📅</button>
+            <button id="shopBtn" class="icon-btn" title="Booster Shop & Coins" aria-label="Booster Shop">🪙</button>
+            <button id="statsBtn" class="icon-btn" title="Stats & Trophies" aria-label="Player Stats">🏆</button>
+            <button id="soundBtn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
+            <button id="restartBtn" class="icon-btn" title="New Game" aria-label="Restart Game">🔄</button>
+          </div>
+        </div>
+
+        <div class="scores-container">
+          <div class="score-card score-best">
+            <div class="score-label">👑 BEST</div>
+            <div id="bestScoreText" class="score-val">0</div>
+          </div>
+          <div class="score-card score-current">
+            <div class="score-label">🔥 SCORE</div>
+            <div id="currentScoreText" class="score-val">0</div>
+          </div>
+          <div class="score-card score-coins" id="headerCoinCard">
+            <div class="score-label">🪙 COINS</div>
+            <div id="headerCoinsText" class="score-val">100</div>
+          </div>
+        </div>
+
+        <!-- In-game Booster Toolbar -->
+        <div id="boosterBar" class="booster-bar">
+          <button id="rotateBoosterBtn" class="booster-btn" title="Rotate dock piece 90°">
+            <span class="booster-icon">🔄</span>
+            <span class="booster-label">Rotate</span>
+            <span id="rotateCountBadge" class="booster-badge">3</span>
+          </button>
+          <button id="shuffleBoosterBtn" class="booster-btn" title="Shuffle dock pieces">
+            <span class="booster-icon">🔀</span>
+            <span class="booster-label">Shuffle</span>
+            <span id="shuffleCountBadge" class="booster-badge">3</span>
+          </button>
+          <button id="hammerBoosterBtn" class="booster-btn" title="Smash 3x3 block area">
+            <span class="booster-icon">🔨</span>
+            <span class="booster-label">3x3 Blast</span>
+            <span id="hammerCountBadge" class="booster-badge">2</span>
+          </button>
+        </div>
+
+        <!-- Daily Mode Indicator Banner -->
+        <div id="dailyBanner" class="daily-banner hidden">
+          <span id="dailyBannerText">📅 DAILY CHALLENGE: Clear 12 Lines (Boosters Disabled)</span>
+        </div>
+
+        <!-- Mode Notification Banner -->
+        <div id="modeBanner" class="mode-banner hidden">
+          <span id="modeBannerText">🔨 Tap a block on the board to smash 3x3!</span>
+        </div>
+
+        <!-- Combo Banner with Heartbeat 3-Move Grace Indicator -->
+        <div id="comboBanner" class="combo-banner hidden">
+          <span class="combo-lightning">⚡</span>
+          <span id="comboText">COMBO x2</span>
+          <span id="comboHearts" class="combo-hearts">🔥🔥🔥</span>
+        </div>
+      </header>
+
+      <!-- Main Canvas Area -->
+      <main class="canvas-wrapper">
+        <canvas id="gameCanvas"></canvas>
+      </main>
+
+      <!-- Stuck / No Moves Left Rescue Modal -->
+      <dialog id="stuckModal">
+        <div class="modal-header">
+          <div class="trophy-icon">🚨</div>
+          <h2 class="modal-title">OUT OF MOVES!</h2>
+          <p class="modal-subtitle">Don't give up! Use a booster or free rescue to keep your score streak alive.</p>
+        </div>
+
+        <div class="rescue-options-grid">
+          <button id="rescueHammerBtn" class="rescue-card-btn">
+            <span class="rescue-card-icon">🔨</span>
+            <div class="rescue-card-info">
+              <div class="rescue-card-title">3x3 Blast Hammer</div>
+              <div id="rescueHammerSub" class="rescue-card-sub">Use 1 Hammer</div>
+            </div>
+          </button>
+
+          <button id="rescueShuffleBtn" class="rescue-card-btn">
+            <span class="rescue-card-icon">🔀</span>
+            <div class="rescue-card-info">
+              <div class="rescue-card-title">Shuffle Dock</div>
+              <div id="rescueShuffleSub" class="rescue-card-sub">Use 1 Shuffle</div>
+            </div>
+          </button>
+
+          <button id="rescueRotateBtn" class="rescue-card-btn">
+            <span class="rescue-card-icon">🔄</span>
+            <div class="rescue-card-info">
+              <div class="rescue-card-title">Rotate Piece</div>
+              <div id="rescueRotateSub" class="rescue-card-sub">Use 1 Rotate</div>
+            </div>
+          </button>
+
+          <button id="rescueAdBtn" class="rescue-card-btn rescue-ad-highlight">
+            <span class="rescue-card-icon">📺</span>
+            <div class="rescue-card-info">
+              <div class="rescue-card-title">Free Emergency Shuffle</div>
+              <div class="rescue-card-sub">Watch 3s Ad (1 per game)</div>
+            </div>
+          </button>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 14px;">
+          <button id="stuckGiveUpBtn" class="secondary-btn">Give Up (Game Over)</button>
+        </div>
+      </dialog>
+
+      <!-- Daily Challenge Dialog -->
+      <dialog id="dailyModal">
+        <div class="modal-header">
+          <div class="trophy-icon">📅</div>
+          <h2 class="modal-title">DAILY CHALLENGE</h2>
+          <div id="dailyStreakBadge" class="streak-badge">🔥 1 Day Streak</div>
+        </div>
+
+        <div class="daily-goal-box">
+          <div class="modal-score-label">TODAY'S MISSION</div>
+          <div id="dailyMissionTitle" class="daily-mission-val">Clear 12 Lines</div>
+          <div id="dailyRewardText" class="daily-reward-sub">Reward: +100 🪙 & Golden Star Stamp</div>
+          <div class="daily-fair-note">⚖️ Pure Skill: Seeded puzzle board, boosters disabled.</div>
+        </div>
+
+        <div class="calendar-preview">
+          <div class="calendar-header" id="calendarMonthHeader">October 2026</div>
+          <div id="calendarDaysGrid" class="calendar-days-grid">
+            <!-- Full monthly calendar grid rendered dynamically -->
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button id="startDailyBtn" class="primary-btn">▶ Start Today's Challenge</button>
+          <button id="closeDailyBtn" class="secondary-btn">Close</button>
+        </div>
+      </dialog>
+
+      <!-- Daily Challenge Victory Dialog -->
+      <dialog id="dailyVictoryModal">
+        <div class="modal-header">
+          <div class="trophy-icon">🌟</div>
+          <h2 class="modal-title" style="background: linear-gradient(135deg, #facc15, #f59e0b); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            MISSION ACCOMPLISHED!
+          </h2>
+          <p class="modal-subtitle">You conquered today's Daily Challenge!</p>
+        </div>
+
+        <div class="daily-goal-box">
+          <div class="modal-score-label">CLAIMED REWARD</div>
+          <div class="daily-mission-val" style="color: #ffd600;">+100 🪙 & 🌟 Golden Star</div>
+          <div id="dailyVictoryStreakText" class="daily-reward-sub">🔥 Streak: 1 Day</div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button id="dailyContinueBtn" class="primary-btn">🔥 Continue Playing (Endless)</button>
+          <button id="dailyFinishBtn" class="secondary-btn">🏠 Back to Classic Mode</button>
+        </div>
+      </dialog>
+
+      <!-- Booster Shop Dialog -->
+      <dialog id="shopModal">
+        <div class="modal-header">
+          <div class="trophy-icon">🪙</div>
+          <h2 class="modal-title">BOOSTER SHOP</h2>
+          <div class="shop-balance-pill">
+            Your Balance: <strong id="shopCoinBalanceText">100</strong> 🪙
+          </div>
+        </div>
+
+        <div class="shop-items-grid">
+          <div class="shop-item-card">
+            <div class="shop-item-icon">🔄</div>
+            <div class="shop-item-name">Rotate x1</div>
+            <div class="shop-item-desc">Turn piece 90°</div>
+            <button id="buyRotateBtn" class="shop-buy-btn">30 🪙</button>
+          </div>
+
+          <div class="shop-item-card">
+            <div class="shop-item-icon">🔀</div>
+            <div class="shop-item-name">Shuffle x1</div>
+            <div class="shop-item-desc">Reroll 3 pieces</div>
+            <button id="buyShuffleBtn" class="shop-buy-btn">50 🪙</button>
+          </div>
+
+          <div class="shop-item-card">
+            <div class="shop-item-icon">🔨</div>
+            <div class="shop-item-name">3x3 Blast x1</div>
+            <div class="shop-item-desc">Smash 3x3 area</div>
+            <button id="buyHammerBtn" class="shop-buy-btn">80 🪙</button>
+          </div>
+
+          <div class="shop-item-card shop-bundle-card">
+            <div class="shop-item-icon">🎁</div>
+            <div class="shop-item-name">Mega Pack</div>
+            <div class="shop-item-desc">2 Rotate + 2 Shuffle + 1 Hammer</div>
+            <button id="buyMegaPackBtn" class="shop-buy-btn bundle-btn">200 🪙 (Save 20%)</button>
+          </div>
+
+          <div class="shop-item-card shop-ad-card">
+            <div class="shop-item-icon">📺</div>
+            <div class="shop-item-name">Free Coins</div>
+            <div class="shop-item-desc">Watch short video</div>
+            <button id="claimAdCoinsBtn" class="shop-buy-btn ad-btn">+50 🪙 Free</button>
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 14px;">
+          <button id="closeShopBtn" class="secondary-btn">Close</button>
+        </div>
+      </dialog>
+
+      <!-- Stats & Achievements Dialog -->
+      <dialog id="statsModal">
+        <div class="modal-header">
+          <div class="trophy-icon">🏆</div>
+          <h2 class="modal-title">STATISTICS & TROPHIES</h2>
+        </div>
+
+        <div class="stats-summary-grid">
+          <div class="stat-mini-card">
+            <div class="stat-mini-label">GAMES PLAYED</div>
+            <div id="statGames" class="stat-mini-val">0</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-label">BEST SCORE</div>
+            <div id="statBest" class="stat-mini-val">0</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-label">MAX COMBO</div>
+            <div id="statCombo" class="stat-mini-val">0</div>
+          </div>
+          <div class="stat-mini-card">
+            <div class="stat-mini-label">LINES CLEARED</div>
+            <div id="statLines" class="stat-mini-val">0</div>
+          </div>
+        </div>
+
+        <div class="achievements-section">
+          <h3 class="section-title">TROPHIES & QUESTS (EARN +50 🪙 EACH)</h3>
+          <div id="achievementsList" class="achievements-list">
+            <!-- Dynamic Achievements List -->
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 16px;">
+          <button id="closeStatsBtn" class="primary-btn">Close</button>
+        </div>
+      </dialog>
+
+      <!-- Game Over Dialog -->
+      <dialog id="gameOverModal">
+        <div class="modal-header">
+          <div class="trophy-icon">🏆</div>
+          <h2 class="modal-title">GAME OVER</h2>
+        </div>
+
+        <div class="modal-score-box">
+          <div id="highScoreBadge" class="high-score-badge" style="display: none;">👑 NEW HIGH SCORE!</div>
+          <div class="modal-score-label">FINAL SCORE</div>
+          <div id="modalFinalScore" class="modal-final-score">0</div>
+          <div class="modal-stats">
+            <div>Max Combo: <strong id="modalMaxCombo">0</strong></div>
+            <div>Lines Cleared: <strong id="modalLines">0</strong></div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="reviveBtn" class="primary-btn revive-btn">⚡ 1x Revive (Clear 4x4 + Fresh Dock)</button>
+          <button id="shareScoreCardBtn" class="primary-btn share-btn">📸 Share Score Card</button>
+          <button id="playAgainBtn" class="secondary-btn">🔄 Play Again</button>
+        </div>
+      </dialog>
+
+      <!-- Score Card Share Dialog -->
+      <dialog id="shareModal">
+        <div class="modal-header">
+          <h2 class="modal-title">SHARE SCORE CARD</h2>
+          <p class="modal-subtitle">Show off your puzzle IQ to friends!</p>
+        </div>
+
+        <div class="share-card-container">
+          <canvas id="shareCardCanvas" width="500" height="500"></canvas>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 14px;">
+          <button id="downloadShareCardBtn" class="primary-btn">💾 Download Image</button>
+          <button id="closeShareBtn" class="secondary-btn">Close</button>
+        </div>
+      </dialog>
+    </div>
+
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "block-blast-star",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "./node_modules/.bin/esbuild tests/game.test.ts --bundle --platform=node --format=esm --banner:js=\"const store=new Map();globalThis.localStorage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k),clear:()=>store.clear()};\" --outfile=tests/dist/game.test.mjs && node --test tests/dist/game.test.mjs",
+    "preview": "vite preview",
+    "cap:sync": "npm run build && npx cap sync android",
+    "build:apk": "npm run cap:sync && cd android && export JAVA_HOME=/opt/homebrew/opt/openjdk@21 && ./gradlew assembleDebug && cp app/build/outputs/apk/debug/app-debug.apk ../build-artifacts/BlockBlastStar.apk",
+    "build:aab": "npm run cap:sync && cd android && export JAVA_HOME=/opt/homebrew/opt/openjdk@21 && ./gradlew bundleDebug && cp app/build/outputs/bundle/debug/app-debug.aab ../build-artifacts/BlockBlastStar.aab",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/haptics": "^8.0.2",
+    "canvas-confetti": "^1.9.4"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.2",
+    "@types/canvas-confetti": "^1.9.0",
+    "typescript": "^5.9.3",
+    "vite": "^6.2.1"
+  }
+}
