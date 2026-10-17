@@ -923,3 +923,24 @@ function gameLoop(now: number) {
 
 requestAnimationFrame(gameLoop);
 syncUI();
+
+// Expose E2E Test Harness Bridge for automated verification
+declare global {
+  interface Window {
+    __BLOCK_BLAST_TEST__?: {
+      game: BlockBlastGame;
+      renderer: GameRenderer;
+      syncUI: () => void;
+      openStuckModal: () => void;
+      showGameOver: () => void;
+    };
+  }
+}
+
+window.__BLOCK_BLAST_TEST__ = {
+  game,
+  renderer,
+  syncUI,
+  openStuckModal,
+  showGameOver,
+};

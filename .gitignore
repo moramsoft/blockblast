@@ -19,6 +19,11 @@ android/captures/
 # Temporary emulator screenshot captures
 emulator_*.png
 
+# Playwright & E2E temporary outputs
+test-results/
+playwright-report/
+build-artifacts/test-reports/
+
 # OS & Editor files
 .DS_Store
 Thumbs.db
