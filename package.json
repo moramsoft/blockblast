@@ -20,7 +20,8 @@
     "build:ios": "bash scripts/release-gate.sh ios",
     "release": "bash scripts/release-gate.sh all && cd android && export JAVA_HOME=/opt/homebrew/opt/openjdk@21 && ./gradlew assembleDebug bundleDebug && cp app/build/outputs/apk/debug/app-debug.apk ../build-artifacts/BlockBlastStar.apk && cp app/build/outputs/bundle/debug/app-debug.aab ../build-artifacts/BlockBlastStar.aab",
     "open:android": "npx cap open android",
-    "open:ios": "npx cap open ios"
+    "open:ios": "npx cap open ios",
+    "install:ipad": "bash scripts/install-ipad.sh"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.2",
