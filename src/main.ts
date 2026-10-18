@@ -40,12 +40,13 @@ const undoTrialBadge = document.getElementById('undoTrialBadge') as HTMLSpanElem
 const hintTrialBadge = document.getElementById('hintTrialBadge') as HTMLSpanElement;
 
 const tutorialBanner = document.getElementById('tutorialBanner') as HTMLDivElement;
-const dismissTutorialBtn = document.getElementById('dismissTutorialBtn') as HTMLButtonElement;
+const dismissTutorialBtn = (document.getElementById('dismissTutorialBtn') || document.getElementById('closeTutorialBtn')) as HTMLButtonElement;
 
 const bestScoreText = document.getElementById('bestScoreText') as HTMLDivElement;
 const currentScoreText = document.getElementById('currentScoreText') as HTMLDivElement;
 const headerCoinsText = document.getElementById('headerCoinsText') as HTMLDivElement;
-const headerCoinCard = document.getElementById('headerCoinCard') as HTMLDivElement;
+const coinChip = (document.getElementById('coinChip') || document.getElementById('headerCoinCard')) as HTMLElement;
+const headerCoinCard = coinChip;
 
 const boosterBar = document.getElementById('boosterBar') as HTMLDivElement;
 const rotateBoosterBtn = document.getElementById('rotateBoosterBtn') as HTMLButtonElement;
@@ -222,7 +223,7 @@ function checkTutorial() {
   }
 }
 
-dismissTutorialBtn.addEventListener('click', (e) => {
+dismissTutorialBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
   localStorage.setItem('blockblast_tutorial_done', 'true');
   tutorialBanner.classList.add('hidden');
@@ -318,6 +319,7 @@ hintBtn.addEventListener('click', (e) => {
 restartBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   if (confirm('Start a new game?')) {
+    if (settingsModal?.open) settingsModal.close();
     game.startNewGame(game.mode);
     displayedScore = 0;
     syncUI();
@@ -398,29 +400,29 @@ dailyFinishBtn.addEventListener('click', () => {
 
 function renderDailyModal() {
   const challenge = game.getTodayDailyChallenge();
-  dailyStreakBadge.textContent = `🔥 ${game.dailyStreak.currentStreak}일 연속 달성`;
+  dailyStreakBadge.textContent = `🔥 ${game.dailyStreak.currentStreak} Day Streak`;
 
   if (challenge.targetType === 'gems') {
-    dailyMissionTitle.textContent = `보석 ${challenge.targetValue}개 모으기 💎`;
+    dailyMissionTitle.textContent = `Collect ${challenge.targetValue} Gems 💎`;
   } else if (challenge.targetType === 'lines') {
-    dailyMissionTitle.textContent = `${challenge.targetValue}줄 완성하기 🧹`;
+    dailyMissionTitle.textContent = `Clear ${challenge.targetValue} Lines 🧹`;
   } else {
-    dailyMissionTitle.textContent = `${challenge.targetValue.toLocaleString()}점 달성하기 🎯`;
+    dailyMissionTitle.textContent = `Reach ${challenge.targetValue.toLocaleString()} Points 🎯`;
   }
 
   dailyRewardText.textContent = challenge.completed
-    ? '✅ 오늘의 퍼즐 달성 완료! (+100 🪙 획득)'
-    : `보상: +${challenge.rewardCoins} 🪙 & 황금 별 스탬프`;
+    ? '✅ Completed today! (+100 🪙 earned)'
+    : `Reward: +${challenge.rewardCoins} 🪙 & Gold Star`;
 
   startDailyBtn.textContent = challenge.completed
-    ? '🔄 오늘의 퍼즐 다시 하기'
-    : '▶ 오늘의 퍼즐 시작하기';
+    ? '🔄 Replay Daily Puzzle'
+    : '▶ Start Puzzle';
 
   // Render Full Month Calendar Grid
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
-  const monthName = `${year}년 ${month + 1}월`;
+  const monthName = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
   calendarMonthHeader.textContent = monthName;
 
   calendarDaysGrid.innerHTML = '';
@@ -504,13 +506,13 @@ buyMegaPackBtn.addEventListener('click', () => {
 
 claimAdCoinsBtn.addEventListener('click', () => {
   claimAdCoinsBtn.disabled = true;
-  claimAdCoinsBtn.textContent = '영상 시청 중...';
+  claimAdCoinsBtn.textContent = 'Watching video...';
   setTimeout(() => {
     game.addCoins(50);
     sound.playAchievement();
     haptics.lineClear();
     claimAdCoinsBtn.disabled = false;
-    claimAdCoinsBtn.textContent = '+50 🪙 무료';
+    claimAdCoinsBtn.textContent = '+50 🪙 Free';
     updateShopButtons();
     syncUI();
   }, 1200);
@@ -521,13 +523,13 @@ function openStuckModal() {
   // Update button subtitles
   rescueHammerSub.textContent =
     game.boosters.hammer > 0
-      ? `보유 망치 1개 사용 (${game.boosters.hammer}개 보유)`
-      : `즉시 구매 및 폭파 (${BOOSTER_PRICES.hammer} 🪙)`;
+      ? `Use 1 Hammer (${game.boosters.hammer} available)`
+      : `Buy & Blast (${BOOSTER_PRICES.hammer} 🪙)`;
 
   rescueShuffleSub.textContent =
     game.boosters.shuffle > 0
-      ? `보유 새 블록 1개 사용 (${game.boosters.shuffle}개 보유)`
-      : `즉시 구매 및 교체 (${BOOSTER_PRICES.shuffle} 🪙)`;
+      ? `Use 1 Shuffle (${game.boosters.shuffle} available)`
+      : `Buy & Shuffle (${BOOSTER_PRICES.shuffle} 🪙)`;
 
   const canRotateHelp = game.canRotateRescueHelp();
   if (canRotateHelp) {
@@ -535,12 +537,12 @@ function openStuckModal() {
     rescueRotateBtn.style.opacity = '1';
     rescueRotateSub.textContent =
       game.boosters.rotate > 0
-        ? `보유 회전 1개 사용 (${game.boosters.rotate}개 보유)`
-        : `즉시 구매 및 회전 (${BOOSTER_PRICES.rotate} 🪙)`;
+        ? `Use 1 Rotate (${game.boosters.rotate} available)`
+        : `Buy & Rotate (${BOOSTER_PRICES.rotate} 🪙)`;
   } else {
     rescueRotateBtn.disabled = true;
     rescueRotateBtn.style.opacity = '0.4';
-    rescueRotateSub.textContent = '회전해도 들어갈 자리가 없어요';
+    rescueRotateSub.textContent = 'No valid spots even if rotated';
   }
 
   if (game.freeAdRescueUsed) {
@@ -580,7 +582,7 @@ rescueRotateBtn.addEventListener('click', () => {
 
 rescueAdBtn.addEventListener('click', () => {
   rescueAdBtn.disabled = true;
-  rescueAdBtn.textContent = '응급 블록 준비 중...';
+  rescueAdBtn.textContent = 'Preparing emergency blocks...';
   setTimeout(() => {
     stuckModal.close();
     game.claimFreeEmergencyRescue();
@@ -629,7 +631,7 @@ function renderStatsModal() {
           <div class="ach-progress-bar-fill" style="width: ${pct}%"></div>
         </div>
       </div>
-      <div class="ach-status">${ach.unlocked ? '✅ 완료' : pct + '%'}</div>
+      <div class="ach-status">${ach.unlocked ? '✅ Unlocked' : pct + '%'}</div>
     `;
     achievementsList.appendChild(row);
   });
@@ -642,7 +644,7 @@ window.addEventListener('keydown', (e) => {
     updateSoundIcon();
   } else if (e.key === 'r' || e.key === 'R') {
     if (!game.isGameOver) {
-      if (confirm('새 게임을 시작할까요?')) {
+      if (confirm('Start a new game?')) {
         game.startNewGame(game.mode);
         displayedScore = 0;
         syncUI();
@@ -674,16 +676,16 @@ function syncUI() {
     const challenge = game.dailyInfo;
     let goalProgress = '';
     if (challenge.targetType === 'gems') {
-      goalProgress = `보석 ${challenge.gemsCollected || 0}/${challenge.targetValue} 💎`;
+      goalProgress = `Gems ${challenge.gemsCollected || 0}/${challenge.targetValue} 💎`;
     } else if (challenge.targetType === 'lines') {
-      goalProgress = `줄 완성 ${game.linesClearedTotal}/${challenge.targetValue}`;
+      goalProgress = `Lines ${game.linesClearedTotal}/${challenge.targetValue}`;
     } else {
-      goalProgress = `점수 ${game.score.toLocaleString()}/${challenge.targetValue.toLocaleString()}`;
+      goalProgress = `Score ${game.score.toLocaleString()}/${challenge.targetValue.toLocaleString()}`;
     }
 
     dailyBannerText.textContent = game.dailyGoalMet
-      ? `⭐ 오늘의 퍼즐 목표 달성! (+100 🪙)`
-      : `📅 오늘의 목표: ${goalProgress}`;
+      ? `⭐ Daily Goal Completed! (+100 🪙)`
+      : `📅 Daily Goal: ${goalProgress}`;
   } else if (game.mode === 'relaxed') {
     modeTag.textContent = 'RELAXED';
     modeTag.classList.remove('hidden');
@@ -699,20 +701,20 @@ function syncUI() {
   const undoStatus = game.canUndo();
   undoBtn.style.opacity = undoStatus.allowed ? '1' : '0.45';
   if (undoStatus.isFree) {
-    undoTrialBadge.className = 'assist-badge';
-    undoTrialBadge.textContent = game.mode === 'relaxed' ? '무료' : `${game.undoFreeTrialRemaining}회`;
+    undoTrialBadge.className = 'assist-badge action-badge';
+    undoTrialBadge.textContent = game.mode === 'relaxed' ? 'Free' : `${game.undoFreeTrialRemaining} Left`;
   } else {
-    undoTrialBadge.className = 'assist-badge coin-badge';
+    undoTrialBadge.className = 'assist-badge action-badge coin-badge';
     undoTrialBadge.textContent = `${undoStatus.cost}🪙`;
   }
 
   const hintStatus = game.canGetHint();
   hintBtn.style.opacity = hintStatus.allowed ? '1' : '0.45';
   if (hintStatus.isFree) {
-    hintTrialBadge.className = 'assist-badge';
-    hintTrialBadge.textContent = game.mode === 'relaxed' ? '무료' : `${game.hintFreeTrialRemaining}회`;
+    hintTrialBadge.className = 'assist-badge action-badge';
+    hintTrialBadge.textContent = game.mode === 'relaxed' ? 'Free' : `${game.hintFreeTrialRemaining} Left`;
   } else {
-    hintTrialBadge.className = 'assist-badge coin-badge';
+    hintTrialBadge.className = 'assist-badge action-badge coin-badge';
     hintTrialBadge.textContent = `${hintStatus.cost}🪙`;
   }
   assistBar.classList.toggle('disabled', game.isGameOver);
@@ -733,10 +735,10 @@ function syncUI() {
   // Mode Banner
   if (game.activeMode === 'hammer') {
     modeBanner.classList.remove('hidden');
-    modeBannerText.textContent = '🔨 부술 자리를 판에서 눌러주세요! (다시 누르면 취소)';
+    modeBannerText.textContent = '🔨 Tap a cell on the board to blast! (Tap again to cancel)';
   } else if (game.activeMode === 'rotate') {
     modeBanner.classList.remove('hidden');
-    modeBannerText.textContent = '🔄 회전할 아래 블록을 눌러주세요! (다시 누르면 취소)';
+    modeBannerText.textContent = '🔄 Tap a piece below to rotate! (Tap again to cancel)';
   } else {
     modeBanner.classList.add('hidden');
   }
@@ -744,7 +746,7 @@ function syncUI() {
   // Combo Banner with 3-Move Heartbeat Indicator
   if (game.combo >= 1) {
     comboBanner.classList.remove('hidden');
-    comboText.textContent = `콤보 x${game.combo}`;
+    comboText.textContent = `Combo x${game.combo}`;
     comboHearts.textContent = '🔥'.repeat(game.comboGraceMoves) + '⚪'.repeat(Math.max(0, 3 - game.comboGraceMoves));
 
     if (game.comboGraceMoves === 1) {
@@ -833,16 +835,16 @@ function renderShareCard() {
 
   // Header Title
   ctx.textAlign = 'center';
-  ctx.font = '400 40px "Jua", -apple-system, sans-serif';
+  ctx.font = '400 38px "Jua", -apple-system, sans-serif';
   ctx.strokeStyle = '#7c2d12';
   ctx.lineWidth = 6;
-  ctx.strokeText('🌸 브레인 블룸 🌸', w / 2, 82);
+  ctx.strokeText('🌸 BRAIN BLOOM 🌸', w / 2, 82);
   ctx.fillStyle = '#f59e0b';
-  ctx.fillText('🌸 브레인 블룸 🌸', w / 2, 82);
+  ctx.fillText('🌸 BRAIN BLOOM 🌸', w / 2, 82);
 
   ctx.font = '400 18px "Jua", -apple-system, sans-serif';
   ctx.fillStyle = '#e11d74';
-  ctx.fillText('매일 피어나는 두뇌 퍼즐 기록표', w / 2, 114);
+  ctx.fillText('Daily Blooming Brain Puzzle Score Card', w / 2, 114);
 
   // Score Box (Royal Purple Velvet Well with Gold Frame)
   ctx.fillStyle = '#2e1a54';
@@ -855,7 +857,7 @@ function renderShareCard() {
 
   ctx.font = '400 17px "Jua", -apple-system, sans-serif';
   ctx.fillStyle = '#fde68a';
-  ctx.fillText('이번 판 최종 점수', w / 2, 174);
+  ctx.fillText('FINAL SCORE', w / 2, 174);
 
   ctx.font = '400 58px "Jua", -apple-system, sans-serif';
   ctx.fillStyle = '#ffffff';
@@ -864,27 +866,27 @@ function renderShareCard() {
   // Stats Grid
   const rank =
     game.score > 2500
-      ? '👑 상위 1% 두뇌 정원 마스터'
+      ? '👑 Top 1% Brain Garden Master'
       : game.score > 1000
-        ? '🌟 상위 5% 두뇌 활력 달인'
-        : '🌱 활짝 피어나는 퍼즐 명인';
+        ? '🌟 Top 5% Brain Vitality Expert'
+        : '🌱 Blooming Puzzle Player';
   ctx.font = '400 22px "Jua", -apple-system, sans-serif';
   ctx.fillStyle = '#4c1d95';
   ctx.fillText(rank, w / 2, 326);
 
   ctx.font = '400 18px "Jua", -apple-system, sans-serif';
   ctx.fillStyle = '#14532d';
-  ctx.fillText(`최대 콤보: ${game.maxCombo}회   •   완성한 줄: ${game.linesClearedTotal}줄`, w / 2, 366);
+  ctx.fillText(`Max Combo: ${game.maxCombo}   •   Lines Cleared: ${game.linesClearedTotal}`, w / 2, 366);
 
   // Date and Watermark
-  const today = new Date().toLocaleDateString('ko-KR', {
+  const today = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long',
+    month: 'short',
     day: 'numeric',
   });
   ctx.font = '400 15px "Jua", -apple-system, sans-serif';
   ctx.fillStyle = '#6b21a8';
-  ctx.fillText(`${today} 달성 • 브레인 블룸 (Brain Bloom)`, w / 2, 438);
+  ctx.fillText(`${today} • Brain Bloom`, w / 2, 438);
 }
 
 downloadShareCardBtn.addEventListener('click', () => {
@@ -905,6 +907,10 @@ function getCanvasCoords(e: PointerEvent): { x: number; y: number } {
 
 canvas.addEventListener('pointerdown', (e) => {
   if (game.isGameOver) return;
+  if (!tutorialBanner.classList.contains('hidden')) {
+    tutorialBanner.classList.add('hidden');
+    localStorage.setItem('blockblast_tutorial_done', 'true');
+  }
   const { x, y } = getCanvasCoords(e);
   const { boardX, boardY, cellSize, cellGap, dockSlots } = renderer.layout;
 
@@ -1072,6 +1078,10 @@ function endDrag(e: PointerEvent) {
   if (activePointerId !== e.pointerId || game.draggedIndex === null) return;
 
   if (game.preview && game.preview.isValid) {
+    if (!tutorialBanner.classList.contains('hidden')) {
+      tutorialBanner.classList.add('hidden');
+      localStorage.setItem('blockblast_tutorial_done', 'true');
+    }
     game.placePiece(
       game.draggedIndex,
       game.preview.gridX,

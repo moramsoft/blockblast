@@ -37,7 +37,7 @@ export class GameRenderer {
 
   public computeLayout(width: number, height: number): LayoutInfo {
     const padX = 18;
-    const bottomPad = 14;
+    const bottomPad = 6;
     const topPad = 12;
     const gapBoardDock = Math.max(14, Math.min(22, Math.floor(height * 0.025)));
     const minDockHeight = 76;
@@ -646,7 +646,7 @@ export class GameRenderer {
         ctx.font = '400 13px "Jua", system-ui, sans-serif';
         ctx.fillStyle = '#c2410c';
         ctx.textAlign = 'center';
-        ctx.fillText('✨ 추천', slot.x + slot.width / 2, slot.y + 18);
+        ctx.fillText('✨ PICK', slot.x + slot.width / 2, slot.y + 18);
         ctx.restore();
       } else if (game.activeMode === 'rotate' && piece) {
         const pulse = 0.5 + Math.sin(this.animTime * 10) * 0.4;
