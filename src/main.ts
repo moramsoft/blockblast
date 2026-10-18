@@ -1,3 +1,5 @@
+import '@fontsource/jua/korean-400.css';
+import '@fontsource/jua/latin-400.css';
 import './style.css';
 import confetti from 'canvas-confetti';
 import { BlockBlastGame, BOOSTER_PRICES, MAX_HELD_BOOSTERS } from './game';
