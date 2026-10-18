@@ -78,52 +78,30 @@
         </div>
       </div>
 
-      <!-- Game Top Header -->
+      <!-- Game Top Header: Peaceful, High-Contrast & Senior-Focused -->
       <header class="game-header">
         <div class="top-bar">
-          <div class="logo-group">
-            <h1 class="logo-title">브레인 블룸</h1>
-            <span id="themeTag" class="logo-tag">NEON</span>
-            <span id="modeTag" class="mode-tag hidden">RELAXED</span>
-          </div>
-          <div class="header-actions">
-            <button id="homeBtn" class="icon-btn" title="홈 메뉴 / 모드 선택" aria-label="Title Screen">
+          <div class="top-bar-left">
+            <button id="homeBtn" class="nav-home-btn" title="홈 메뉴 / 모드 선택" aria-label="Title Screen">
               <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 10.5L12 3l9 7.5v9a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               </svg>
+              <span class="home-text">홈</span>
             </button>
-            <button id="themeBtn" class="icon-btn" title="테마 변경" aria-label="Change Theme">
-              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
-                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
-                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
-                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
-                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.92 0 1.5-.74 1.5-1.5 0-.42-.16-.8-.44-1.1-.28-.31-.44-.69-.44-1.12 0-.92.74-1.66 1.66-1.66H16c3.31 0 6-2.69 6-6 0-4.97-4.48-8.62-10-8.62z"/>
-              </svg>
-            </button>
-            <button id="dailyBtn" class="icon-btn" title="오늘의 퍼즐" aria-label="Daily Challenge">
-              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
-              </svg>
-            </button>
-            <button id="shopBtn" class="icon-btn" title="코인 상점" aria-label="Booster Shop">
-              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 5 0c0 2-5 2-5 4a2.5 2.5 0 0 0 5 0"/>
-              </svg>
-            </button>
-            <button id="statsBtn" class="icon-btn" title="내 기록 / 업적" aria-label="Player Stats">
-              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/>
-                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/>
-                <path d="M4 22h16"/>
-                <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/>
-                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
-              </svg>
-            </button>
+            <span id="themeTag" class="hidden">NEON</span>
+            <span id="modeTag" class="mode-tag hidden">RELAXED</span>
+          </div>
+
+          <!-- Clean Central Score Display: Large, Legible & Peaceful -->
+          <div class="score-center">
+            <div id="currentScoreText" class="main-score-val">0</div>
+            <div class="score-meta-bar">
+              <span class="score-meta-pill">👑 최고 <span id="bestScoreText">0</span></span>
+              <button id="headerCoinCard" class="coin-pill-btn" title="코인 상점">🪙 <span id="headerCoinsText">100</span></button>
+            </div>
+          </div>
+
+          <div class="top-bar-right">
             <button id="soundBtn" class="icon-btn" title="소리 On/Off" aria-label="Toggle Sound">🔊</button>
             <button id="restartBtn" class="icon-btn" title="새 게임 시작" aria-label="Restart Game">
               <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -131,25 +109,16 @@
                 <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
               </svg>
             </button>
+            <button id="settingsBtn" class="icon-btn" title="설정 메뉴" aria-label="Settings">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"/>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+              </svg>
+            </button>
           </div>
         </div>
 
-        <div class="scores-container">
-          <div class="score-card score-best">
-            <div class="score-label">👑 최고 점수</div>
-            <div id="bestScoreText" class="score-val">0</div>
-          </div>
-          <div class="score-card score-current">
-            <div class="score-label">🔥 내 점수</div>
-            <div id="currentScoreText" class="score-val">0</div>
-          </div>
-          <div class="score-card score-coins" id="headerCoinCard">
-            <div class="score-label">🪙 코인</div>
-            <div id="headerCoinsText" class="score-val">100</div>
-          </div>
-        </div>
-
-        <!-- Unified In-game Senior Action Toolbar -->
+        <!-- Streamlined In-game Assist Toolbar: Slim, Calm & Minimal -->
         <div id="boosterBar" class="action-strip">
           <button id="undoBtn" class="senior-action-btn" title="한 수 되돌리기">
             <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -157,7 +126,7 @@
               <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
             </svg>
             <span class="action-btn-text">되돌리기</span>
-            <span id="undoTrialBadge" class="action-badge">5회 무료</span>
+            <span id="undoTrialBadge" class="action-badge">5회</span>
           </button>
 
           <button id="hintBtn" class="senior-action-btn" title="최적 수 힌트 보기">
@@ -167,7 +136,7 @@
               <path d="M12 2a7 7 0 0 0-7 7c0 2.6 1.4 4.8 3.5 6h7c2.1-1.2 3.5-3.4 3.5-6a7 7 0 0 0-7-7z"/>
             </svg>
             <span class="action-btn-text">힌트</span>
-            <span id="hintTrialBadge" class="action-badge">5회 무료</span>
+            <span id="hintTrialBadge" class="action-badge">5회</span>
           </button>
 
           <button id="shuffleBoosterBtn" class="senior-action-btn" title="새 블록으로 바꾸기">
@@ -238,6 +207,35 @@
       <main class="canvas-wrapper">
         <canvas id="gameCanvas"></canvas>
       </main>
+
+      <!-- Settings & Extra Modes Modal -->
+      <dialog id="settingsModal" class="settings-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">설정 및 메뉴</h2>
+        </div>
+        <div class="settings-list">
+          <button id="themeBtn" class="settings-row-btn" title="테마 변경">
+            <span class="settings-row-icon">🎨</span>
+            <span class="settings-row-text">테마 변경</span>
+            <span id="settingsThemeTag" class="settings-row-badge">NEON</span>
+          </button>
+          <button id="dailyBtn" class="settings-row-btn" title="오늘의 퍼즐">
+            <span class="settings-row-icon">📅</span>
+            <span class="settings-row-text">오늘의 퍼즐</span>
+          </button>
+          <button id="shopBtn" class="settings-row-btn" title="코인 상점">
+            <span class="settings-row-icon">🪙</span>
+            <span class="settings-row-text">코인 상점</span>
+          </button>
+          <button id="statsBtn" class="settings-row-btn" title="내 기록 / 업적">
+            <span class="settings-row-icon">🏆</span>
+            <span class="settings-row-text">내 기록 / 업적</span>
+          </button>
+        </div>
+        <div class="modal-actions" style="margin-top: 14px;">
+          <button id="closeSettingsBtn" class="primary-btn close-modal-btn">닫기</button>
+        </div>
+      </dialog>
 
       <!-- Stuck / No Moves Left Rescue Modal -->
       <dialog id="stuckModal">

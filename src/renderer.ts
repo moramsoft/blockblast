@@ -37,20 +37,25 @@ export class GameRenderer {
 
   public computeLayout(width: number, height: number): LayoutInfo {
     const padX = 16;
-    const maxBoardFromHeight = Math.max(220, (height - 150) * 0.72);
-    const maxBoardWidth = Math.min(width - padX * 2, maxBoardFromHeight, 460);
+    const bottomPad = 18;
+    const gapBoardDock = Math.max(12, Math.min(22, Math.floor(height * 0.025)));
+    const minDockHeight = 72;
+
+    // Board size must fit available width AND leave sufficient height for dock and margins
+    const maxBoardFromHeight = Math.max(190, height - minDockHeight - gapBoardDock - bottomPad - 24);
+    const maxBoardWidth = Math.min(width - padX * 2, maxBoardFromHeight, 480);
     const cellGap = Math.max(3, Math.floor(maxBoardWidth / 70));
     const cellSize = (maxBoardWidth - (BOARD_SIZE - 1) * cellGap) / BOARD_SIZE;
     const boardSize = BOARD_SIZE * cellSize + (BOARD_SIZE - 1) * cellGap;
     const boardX = (width - boardSize) / 2;
 
     const remainingHeight = height - boardSize;
-    const topMargin = Math.max(12, remainingHeight * 0.12);
+    const topMargin = Math.max(8, Math.min(24, (remainingHeight - minDockHeight - gapBoardDock - bottomPad) * 0.35));
     const boardY = topMargin;
 
-    // Dock positioning
-    const dockY = boardY + boardSize + 18;
-    const dockHeight = Math.max(90, height - dockY - 16);
+    // Dock positioning: strictly contained within canvas!
+    const dockY = boardY + boardSize + gapBoardDock;
+    const dockHeight = Math.max(minDockHeight, height - dockY - bottomPad);
     const dockSlotWidth = (boardSize - 2 * 10) / 3;
 
     const dockSlots = [0, 1, 2].map((i) => ({
@@ -639,12 +644,23 @@ export class GameRenderer {
     const cols = matrix[0].length;
 
     const maxDim = Math.max(rows, cols);
-    const fitFactor = maxDim >= 5 ? 0.42 : maxDim === 4 ? 0.48 : maxDim === 3 ? 0.58 : 0.68;
-    const miniCellSize = baseCellSize * fitFactor;
-    const miniGap = Math.max(2, miniCellSize * 0.08);
+    let fitFactor = maxDim >= 5 ? 0.42 : maxDim === 4 ? 0.48 : maxDim === 3 ? 0.58 : 0.68;
+    let miniCellSize = baseCellSize * fitFactor;
+    let miniGap = Math.max(2, miniCellSize * 0.08);
 
-    const totalW = cols * miniCellSize + (cols - 1) * miniGap;
-    const totalH = rows * miniCellSize + (rows - 1) * miniGap;
+    let totalW = cols * miniCellSize + (cols - 1) * miniGap;
+    let totalH = rows * miniCellSize + (rows - 1) * miniGap;
+
+    // Safety scale down: piece must always fit within slot bounds with padding
+    const availW = slot.width - 12;
+    const availH = slot.height - 12;
+    if (totalW > availW || totalH > availH) {
+      const scale = Math.min(availW / totalW, availH / totalH);
+      miniCellSize *= scale;
+      miniGap = Math.max(1.5, miniCellSize * 0.08);
+      totalW = cols * miniCellSize + (cols - 1) * miniGap;
+      totalH = rows * miniCellSize + (rows - 1) * miniGap;
+    }
 
     const startX = slot.x + (slot.width - totalW) / 2;
     const startY = slot.y + (slot.height - totalH) / 2;

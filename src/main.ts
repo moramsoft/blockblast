@@ -14,6 +14,10 @@ const themeBtn = document.getElementById('themeBtn') as HTMLButtonElement;
 const themeTag = document.getElementById('themeTag') as HTMLSpanElement;
 const modeTag = document.getElementById('modeTag') as HTMLSpanElement;
 const homeBtn = document.getElementById('homeBtn') as HTMLButtonElement;
+const settingsBtn = document.getElementById('settingsBtn') as HTMLButtonElement;
+const settingsModal = document.getElementById('settingsModal') as HTMLDialogElement;
+const closeSettingsBtn = document.getElementById('closeSettingsBtn') as HTMLButtonElement;
+const settingsThemeTag = document.getElementById('settingsThemeTag') as HTMLElement;
 const dailyBtn = document.getElementById('dailyBtn') as HTMLButtonElement;
 const shopBtn = document.getElementById('shopBtn') as HTMLButtonElement;
 const statsBtn = document.getElementById('statsBtn') as HTMLButtonElement;
@@ -166,7 +170,6 @@ soundBtn.addEventListener('click', (e) => {
   haptics.tick();
 });
 
-// Theme cycle button
 themeBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   const themes: ThemeId[] = ['neon', 'wood', 'candy'];
@@ -175,7 +178,21 @@ themeBtn.addEventListener('click', (e) => {
   game.setTheme(newTheme);
   document.body.className = `theme-${newTheme}`;
   themeTag.textContent = newTheme.toUpperCase();
+  if (settingsThemeTag) settingsThemeTag.textContent = newTheme.toUpperCase();
   haptics.tick();
+});
+
+settingsBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  haptics.tick();
+  if (settingsThemeTag) settingsThemeTag.textContent = game.theme.toUpperCase();
+  settingsModal?.showModal();
+});
+
+closeSettingsBtn?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  haptics.tick();
+  settingsModal?.close();
 });
 
 // Comfort Mode & Senior Settings Initialization
@@ -342,6 +359,7 @@ hammerBoosterBtn.addEventListener('click', (e) => {
 dailyBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   haptics.tick();
+  if (settingsModal?.open) settingsModal.close();
   renderDailyModal();
   dailyModal.showModal();
 });
@@ -433,6 +451,7 @@ headerCoinCard.addEventListener('click', (e) => {
 });
 
 function openShopModal() {
+  if (settingsModal?.open) settingsModal.close();
   shopCoinBalanceText.textContent = game.coins.toLocaleString();
   updateShopButtons();
   shopModal.showModal();
@@ -574,6 +593,7 @@ stuckGiveUpBtn.addEventListener('click', () => {
 statsBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   haptics.tick();
+  if (settingsModal?.open) settingsModal.close();
   renderStatsModal();
   statsModal.showModal();
 });

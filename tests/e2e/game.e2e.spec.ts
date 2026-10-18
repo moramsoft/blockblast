@@ -400,6 +400,7 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
       b.syncUI();
     });
 
+    await page.locator('#settingsBtn').click();
     await page.locator('#shopBtn').click();
     await expect(page.locator('#shopModal')).toBeVisible();
     await expect(page.locator('#shopCoinBalanceText')).toHaveText('500');
@@ -419,6 +420,7 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
   });
 
   test('E2E-10: Daily Challenge Mode, Seeded Board, Booster Lockout & Victory Modal', async ({ page }) => {
+    await page.locator('#settingsBtn').click();
     await page.locator('#dailyBtn').click();
     await expect(page.locator('#dailyModal')).toBeVisible();
 
@@ -442,8 +444,9 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
   });
 
   test('E2E-11, E2E-12, E2E-13, E2E-14: Themes, Stats Modal, Share Score Card & Sound Toggle', async ({ page }) => {
-    // E2E-11: Theme switching
+    // E2E-11: Theme switching via settings menu
     await expect(page.locator('body')).toHaveClass(/theme-neon/);
+    await page.locator('#settingsBtn').click();
     await page.locator('#themeBtn').click();
     await expect(page.locator('body')).toHaveClass(/theme-wood/);
     await expect(page.locator('#themeTag')).toHaveText('WOOD');
