@@ -26,6 +26,15 @@ const statsBtn = document.getElementById('statsBtn') as HTMLButtonElement;
 
 // Title Screen Elements
 const titleScreen = document.getElementById('titleScreen') as HTMLDivElement;
+if (titleScreen) {
+  titleScreen.addEventListener(
+    'touchmove',
+    (e) => {
+      e.preventDefault();
+    },
+    { passive: false }
+  );
+}
 const startRelaxedBtn = document.getElementById('startRelaxedBtn') as HTMLButtonElement;
 const startClassicBtn = document.getElementById('startClassicBtn') as HTMLButtonElement;
 const startDailyTitleBtn = document.getElementById('startDailyTitleBtn') as HTMLButtonElement;
