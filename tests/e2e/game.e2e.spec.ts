@@ -580,4 +580,65 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
     );
     expect(anyPlaceable).toBe(true);
   });
+
+  test('E2E-18: Relaxed Mode Boosters & Long-Press Explanation Tooltips', async ({ page }) => {
+    // 1. Enter Relaxed mode
+    await page.locator('#homeBtn').click();
+    await page.locator('#startRelaxedBtn').click();
+    await expect(page.locator('#modeTag')).toHaveText('RELAXED');
+    await expect(page.locator('#boosterBar')).not.toHaveClass(/disabled/);
+
+    // 2. Verify Boosters work in Relaxed Mode
+    await page.locator('#rotateBoosterBtn').click();
+    await expect(page.locator('#modeBanner')).toBeVisible();
+    await expect(page.locator('#rotateBoosterBtn')).toHaveClass(/active-mode/);
+    await page.locator('#rotateBoosterBtn').click({ force: true }); // toggle off
+    await expect(page.locator('#modeBanner')).toBeHidden();
+
+    await page.locator('#hammerBoosterBtn').click();
+    await expect(page.locator('#modeBanner')).toBeVisible();
+    await expect(page.locator('#hammerBoosterBtn')).toHaveClass(/active-mode/);
+    await page.locator('#hammerBoosterBtn').click({ force: true }); // toggle off
+    await expect(page.locator('#modeBanner')).toBeHidden();
+
+    const initialShuffle = await page.evaluate(() => window.__BLOCK_BLAST_TEST__!.game.boosters.shuffle);
+    await page.locator('#shuffleBoosterBtn').click();
+    const afterShuffle = await page.evaluate(() => window.__BLOCK_BLAST_TEST__!.game.boosters.shuffle);
+    expect(afterShuffle).toBe(initialShuffle - 1);
+
+    // 3. Test Long-Press Explanation Tooltip on Hammer Booster
+    const hammerBox = await page.locator('#hammerBoosterBtn').boundingBox();
+    expect(hammerBox).not.toBeNull();
+    const cx = hammerBox!.x + hammerBox!.width / 2;
+    const cy = hammerBox!.y + hammerBox!.height / 2;
+
+    await page.mouse.move(cx, cy);
+    await page.mouse.down();
+    await page.waitForTimeout(550);
+    await page.mouse.up();
+
+    await expect(page.locator('#boosterTooltip')).toBeVisible();
+    await expect(page.locator('#boosterTooltipTitle')).toHaveText('3x3 Blast Hammer');
+    await expect(page.locator('#boosterTooltipDesc')).toContainText('3x3 square');
+
+    // Close tooltip via close button
+    await page.locator('#closeBoosterTooltipBtn').click();
+    await expect(page.locator('#boosterTooltip')).toHaveClass(/hidden/);
+
+    // 4. Test Long-Press on Undo button
+    const undoBox = await page.locator('#undoBtn').boundingBox();
+    expect(undoBox).not.toBeNull();
+    await page.mouse.move(undoBox!.x + undoBox!.width / 2, undoBox!.y + undoBox!.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(550);
+    await page.mouse.up();
+
+    await expect(page.locator('#boosterTooltip')).toBeVisible();
+    await expect(page.locator('#boosterTooltipTitle')).toHaveText('1-Step Undo');
+    await expect(page.locator('#boosterTooltipDesc')).toContainText('Undo');
+
+    // Dismiss by tapping outside
+    await page.mouse.click(10, 10);
+    await expect(page.locator('#boosterTooltip')).toHaveClass(/hidden/);
+  });
 });

@@ -169,6 +169,27 @@
           <span class="action-btn-text">Rotate</span>
           <span id="rotateCountBadge" class="action-badge">3</span>
         </button>
+
+        <!-- Booster Long-Press Explanation Tooltip -->
+        <div id="boosterTooltip" class="booster-tooltip hidden" role="tooltip" aria-hidden="true">
+          <div class="booster-tooltip-card">
+            <div class="booster-tooltip-arrow" id="boosterTooltipArrow"></div>
+            <div class="booster-tooltip-top">
+              <img id="boosterTooltipIcon" class="booster-tooltip-icon" src="/img/booster-undo.png" alt="" />
+              <div class="booster-tooltip-info">
+                <div class="booster-tooltip-title-row">
+                  <span id="boosterTooltipTitle" class="booster-tooltip-title">1-Step Undo</span>
+                  <span id="boosterTooltipBadge" class="booster-tooltip-badge">Free</span>
+                </div>
+                <div id="boosterTooltipSub" class="booster-tooltip-sub">Takes back your last move</div>
+              </div>
+              <button id="closeBoosterTooltipBtn" class="booster-tooltip-close" aria-label="Close" title="Close">✕</button>
+            </div>
+            <div id="boosterTooltipDesc" class="booster-tooltip-desc">
+              Placed a block in the wrong spot? Tap Undo to roll back the board by one move.
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Retained assistBar container for test bridge backward compatibility -->

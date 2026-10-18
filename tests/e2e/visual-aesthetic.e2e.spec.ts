@@ -45,6 +45,18 @@ test.describe('Visual Aesthetic & Cross-Device Proportional Scaling Test (iPhone
     const iphoneIngamePath = `${ARTIFACT_DIR}/ingame-iphone.png`;
     await iphonePage.screenshot({ path: iphoneIngamePath });
 
+    // Long-press Hammer to capture explanation tooltip on iPhone
+    const iphoneHammer = await iphonePage.locator('#hammerBoosterBtn').boundingBox();
+    if (iphoneHammer) {
+      await iphonePage.mouse.move(iphoneHammer.x + iphoneHammer.width / 2, iphoneHammer.y + iphoneHammer.height / 2);
+      await iphonePage.mouse.down();
+      await iphonePage.waitForTimeout(550);
+      await iphonePage.mouse.up();
+      await iphonePage.waitForTimeout(250);
+      await iphonePage.screenshot({ path: `${ARTIFACT_DIR}/tooltip-iphone.png` });
+      await iphonePage.locator('#closeBoosterTooltipBtn').click();
+    }
+
     const iphoneIngameMetrics = await iphonePage.evaluate(() => {
       const homeBtn = document.getElementById('homeBtn')!.getBoundingClientRect();
       const undoBtn = document.getElementById('undoBtn')!.getBoundingClientRect();
@@ -107,6 +119,18 @@ test.describe('Visual Aesthetic & Cross-Device Proportional Scaling Test (iPhone
 
     const ipadIngamePath = `${ARTIFACT_DIR}/ingame-ipad.png`;
     await ipadPage.screenshot({ path: ipadIngamePath });
+
+    // Long-press Hammer to capture explanation tooltip on iPad
+    const ipadHammer = await ipadPage.locator('#hammerBoosterBtn').boundingBox();
+    if (ipadHammer) {
+      await ipadPage.mouse.move(ipadHammer.x + ipadHammer.width / 2, ipadHammer.y + ipadHammer.height / 2);
+      await ipadPage.mouse.down();
+      await ipadPage.waitForTimeout(550);
+      await ipadPage.mouse.up();
+      await ipadPage.waitForTimeout(250);
+      await ipadPage.screenshot({ path: `${ARTIFACT_DIR}/tooltip-ipad.png` });
+      await ipadPage.locator('#closeBoosterTooltipBtn').click();
+    }
 
     const ipadIngameMetrics = await ipadPage.evaluate(() => {
       const homeBtn = document.getElementById('homeBtn')!.getBoundingClientRect();

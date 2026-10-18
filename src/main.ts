@@ -70,6 +70,16 @@ const rotateCountBadge = document.getElementById('rotateCountBadge') as HTMLSpan
 const shuffleCountBadge = document.getElementById('shuffleCountBadge') as HTMLSpanElement;
 const hammerCountBadge = document.getElementById('hammerCountBadge') as HTMLSpanElement;
 
+// Booster Long-Press Explanation Tooltip Elements
+const boosterTooltip = document.getElementById('boosterTooltip') as HTMLDivElement;
+const boosterTooltipArrow = document.getElementById('boosterTooltipArrow') as HTMLDivElement;
+const boosterTooltipIcon = document.getElementById('boosterTooltipIcon') as HTMLImageElement;
+const boosterTooltipTitle = document.getElementById('boosterTooltipTitle') as HTMLSpanElement;
+const boosterTooltipBadge = document.getElementById('boosterTooltipBadge') as HTMLSpanElement;
+const boosterTooltipSub = document.getElementById('boosterTooltipSub') as HTMLDivElement;
+const boosterTooltipDesc = document.getElementById('boosterTooltipDesc') as HTMLDivElement;
+const closeBoosterTooltipBtn = document.getElementById('closeBoosterTooltipBtn') as HTMLButtonElement;
+
 const dailyBanner = document.getElementById('dailyBanner') as HTMLDivElement;
 const dailyBannerText = document.getElementById('dailyBannerText') as HTMLSpanElement;
 const modeBanner = document.getElementById('modeBanner') as HTMLDivElement;
@@ -376,6 +386,175 @@ hammerBoosterBtn.addEventListener('click', (e) => {
   haptics.tick();
   syncUI();
 });
+
+// =========================================================
+// BOOSTER LONG-PRESS EXPLANATION POPUP (Senior & Accessibility Assist)
+// =========================================================
+function hideBoosterTooltip() {
+  if (!boosterTooltip) return;
+  boosterTooltip.classList.add('hidden');
+  boosterTooltip.setAttribute('aria-hidden', 'true');
+}
+
+function showBoosterTooltip(
+  anchorBtn: HTMLElement,
+  info: {
+    title: string;
+    sub: string;
+    desc: string;
+    icon: string;
+    badge: string;
+  }
+) {
+  if (!boosterTooltip) return;
+  boosterTooltipIcon.src = info.icon;
+  boosterTooltipTitle.textContent = info.title;
+  boosterTooltipSub.textContent = info.sub;
+  boosterTooltipDesc.textContent = info.desc;
+  boosterTooltipBadge.textContent = info.badge;
+
+  boosterTooltip.classList.remove('hidden');
+  boosterTooltip.setAttribute('aria-hidden', 'false');
+
+  // Align pointer arrow accurately right above the anchor button center
+  const cardEl = (boosterTooltip.querySelector('.booster-tooltip-card') || boosterTooltip) as HTMLElement;
+  const cardRect = cardEl.getBoundingClientRect();
+  const btnRect = anchorBtn.getBoundingClientRect();
+  const arrowX = btnRect.left + btnRect.width / 2 - cardRect.left;
+  const clampedX = Math.max(22, Math.min(cardRect.width - 22, arrowX));
+  if (boosterTooltipArrow) {
+    boosterTooltipArrow.style.left = `${Math.round(clampedX)}px`;
+  }
+}
+
+if (closeBoosterTooltipBtn) {
+  closeBoosterTooltipBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    hideBoosterTooltip();
+  });
+}
+
+// Dismiss tooltip on tap outside
+document.addEventListener('pointerdown', (e) => {
+  if (boosterTooltip && !boosterTooltip.classList.contains('hidden')) {
+    const target = e.target as Node;
+    if (!boosterTooltip.contains(target) && !boosterBar.contains(target)) {
+      hideBoosterTooltip();
+    }
+  }
+});
+
+function attachLongPressExplanation(
+  button: HTMLElement,
+  getInfo: () => {
+    title: string;
+    sub: string;
+    desc: string;
+    icon: string;
+    badge: string;
+  }
+) {
+  let pressTimer: number | null = null;
+  let isLongPressTriggered = false;
+  let startX = 0;
+  let startY = 0;
+
+  const cancelPress = () => {
+    if (pressTimer !== null) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+  };
+
+  button.addEventListener('pointerdown', (e) => {
+    isLongPressTriggered = false;
+    startX = e.clientX;
+    startY = e.clientY;
+    cancelPress();
+
+    pressTimer = window.setTimeout(() => {
+      isLongPressTriggered = true;
+      haptics.tick();
+      showBoosterTooltip(button, getInfo());
+    }, 450);
+  });
+
+  button.addEventListener('pointermove', (e) => {
+    if (pressTimer !== null) {
+      const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+      if (dist > 12) {
+        cancelPress();
+      }
+    }
+  });
+
+  button.addEventListener('pointerup', () => {
+    cancelPress();
+  });
+
+  button.addEventListener('pointercancel', cancelPress);
+  button.addEventListener('pointerleave', cancelPress);
+
+  // Capture phase: Suppress booster click execution when long-press was activated
+  button.addEventListener(
+    'click',
+    (e) => {
+      if (isLongPressTriggered) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        isLongPressTriggered = false;
+      }
+    },
+    true
+  );
+}
+
+// Attach long-press explanations to all 5 bottom buttons
+attachLongPressExplanation(undoBtn, () => {
+  const status = game.canUndo();
+  return {
+    title: '1-Step Undo',
+    sub: 'Takes back your previous move',
+    desc: 'Placed a block in the wrong spot? Tap Undo to roll back the board by one move. In Relaxed mode, it is completely free and unlimited!',
+    icon: '/img/booster-undo.png',
+    badge: game.mode === 'relaxed' ? 'Free' : (status.isFree ? 'Free' : '20🪙'),
+  };
+});
+
+attachLongPressExplanation(hintBtn, () => {
+  const status = game.canGetHint();
+  return {
+    title: 'Best Move Hint',
+    sub: 'Shows optimal piece placement',
+    desc: 'Unsure where to place a block? Tap Hint to highlight the best spot on the board for line clears and combo streaks.',
+    icon: '/img/booster-hint.png',
+    badge: status.isFree ? 'Free' : '20🪙',
+  };
+});
+
+attachLongPressExplanation(shuffleBoosterBtn, () => ({
+  title: 'Piece Shuffle',
+  sub: 'Refreshes your tray pieces',
+  desc: 'Don\'t like your current 3 blocks? Tap Shuffle to replace them with 3 brand-new, guaranteed placeable shapes!',
+  icon: '/img/booster-shuffle.png',
+  badge: `${game.boosters.shuffle} Left`,
+}));
+
+attachLongPressExplanation(hammerBoosterBtn, () => ({
+  title: '3x3 Blast Hammer',
+  sub: 'Smash any 3x3 block area',
+  desc: 'Tap Hammer, then tap any cell on the board to smash and clear a 3x3 square of blocks instantly. Great for escaping tricky situations!',
+  icon: '/img/booster-hammer.png',
+  badge: `${game.boosters.hammer} Left`,
+}));
+
+attachLongPressExplanation(rotateBoosterBtn, () => ({
+  title: 'Piece Rotate',
+  sub: 'Rotates a tray piece 90°',
+  desc: 'Tap Rotate, then tap any piece in your bottom tray to rotate it 90 degrees clockwise for the perfect fit.',
+  icon: '/img/booster-rotate.png',
+  badge: `${game.boosters.rotate} Left`,
+}));
 
 // Daily Challenge Modal
 dailyBtn.addEventListener('click', (e) => {

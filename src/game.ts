@@ -484,7 +484,7 @@ export class BlockBlastGame {
 
     // If no piece can be placed:
     if (!anyCanPlace && remainingPiecesCount > 0) {
-      if (this.mode === 'classic' && !this.isStuck && this.hasRescueAvailable()) {
+      if ((this.mode === 'classic' || this.mode === 'relaxed') && !this.isStuck && this.hasRescueAvailable()) {
         this.isStuck = true;
         sound.playInvalid();
         if (this.onStuckCallback) {
@@ -857,7 +857,7 @@ export class BlockBlastGame {
   // --- BOOSTER ACTIONS & SHOP ---
 
   public isBoosterAllowed(): boolean {
-    return this.mode === 'classic';
+    return this.mode === 'classic' || this.mode === 'relaxed';
   }
 
   // 1. Shuffle Booster
