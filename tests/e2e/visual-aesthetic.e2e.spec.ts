@@ -58,21 +58,31 @@ test.describe('Visual Aesthetic & Cross-Device Proportional Scaling Test (iPhone
     }
 
     const iphoneIngameMetrics = await iphonePage.evaluate(() => {
+      const app = document.getElementById('app')!.getBoundingClientRect();
       const homeBtn = document.getElementById('homeBtn')!.getBoundingClientRect();
+      const scoreCenter = document.querySelector('.score-center')!.getBoundingClientRect();
       const undoBtn = document.getElementById('undoBtn')!.getBoundingClientRect();
       const undoSvg = document.querySelector('#undoBtn .action-svg')!.getBoundingClientRect();
       const canvas = document.getElementById('gameCanvas')!.getBoundingClientRect();
       const boosterBtns = Array.from(document.querySelectorAll('.booster-bar .action-btn')).map((el) =>
         el.getBoundingClientRect()
       );
+      const appMid = app.left + app.width / 2;
+      const scoreMid = scoreCenter.left + scoreCenter.width / 2;
       return {
         topBtnW: homeBtn.width,
         boosterBtnW: undoBtn.width,
         boosterSvgW: undoSvg.width,
         canvasW: canvas.width,
         boosterBtns,
+        appMid,
+        scoreMid,
+        scoreCenterOffset: Math.abs(scoreMid - appMid),
       };
     });
+
+    // Score center must be dead-centered on iPhone (offset <= 2px)
+    expect(iphoneIngameMetrics.scoreCenterOffset).toBeLessThanOrEqual(2);
 
     // Check booster buttons do not overlap horizontally on iPhone
     for (let i = 0; i < iphoneIngameMetrics.boosterBtns.length - 1; i++) {
@@ -133,21 +143,31 @@ test.describe('Visual Aesthetic & Cross-Device Proportional Scaling Test (iPhone
     }
 
     const ipadIngameMetrics = await ipadPage.evaluate(() => {
+      const app = document.getElementById('app')!.getBoundingClientRect();
       const homeBtn = document.getElementById('homeBtn')!.getBoundingClientRect();
+      const scoreCenter = document.querySelector('.score-center')!.getBoundingClientRect();
       const undoBtn = document.getElementById('undoBtn')!.getBoundingClientRect();
       const undoSvg = document.querySelector('#undoBtn .action-svg')!.getBoundingClientRect();
       const canvas = document.getElementById('gameCanvas')!.getBoundingClientRect();
       const boosterBtns = Array.from(document.querySelectorAll('.booster-bar .action-btn')).map((el) =>
         el.getBoundingClientRect()
       );
+      const appMid = app.left + app.width / 2;
+      const scoreMid = scoreCenter.left + scoreCenter.width / 2;
       return {
         topBtnW: homeBtn.width,
         boosterBtnW: undoBtn.width,
         boosterSvgW: undoSvg.width,
         canvasW: canvas.width,
         boosterBtns,
+        appMid,
+        scoreMid,
+        scoreCenterOffset: Math.abs(scoreMid - appMid),
       };
     });
+
+    // Score center must be dead-centered on iPad (offset <= 2px)
+    expect(ipadIngameMetrics.scoreCenterOffset).toBeLessThanOrEqual(2);
 
     // Check booster buttons do not overlap horizontally on iPad
     for (let i = 0; i < ipadIngameMetrics.boosterBtns.length - 1; i++) {

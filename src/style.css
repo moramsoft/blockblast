@@ -107,25 +107,29 @@ body.theme-candy {
 }
 
 .top-bar {
+  position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 48px;
+  min-height: 64px;
+  width: 100%;
 }
 
 .top-bar-left {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 80px;
+  gap: 6px;
+  z-index: 2;
+  position: relative;
 }
 
 .top-bar-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-width: 80px;
+  gap: 6px;
   justify-content: flex-end;
+  z-index: 2;
+  position: relative;
 }
 
 .nav-home-btn {
@@ -204,30 +208,38 @@ body.theme-candy {
   box-shadow: inset 0 -2px 0 rgba(76, 29, 149, 0.14), 0 1px 0 #4c1d95;
 }
 
-/* Central Score Display: Pill row on top, large gold score below */
+/* Central Score Display: Perfectly Centered on Viewport / Top-Bar */
 .score-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  z-index: 1;
+  pointer-events: auto;
+  text-align: center;
+  width: max-content;
 }
 
 .score-meta-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .score-meta-pill {
   font-family: 'Jua', sans-serif;
-  font-size: 14px;
+  font-size: 13.5px;
   color: #7c2d12;
   background: linear-gradient(180deg, #fef9c3 0%, #fde047 100%);
   border: 2px solid #7c2d12;
   box-shadow: 0 2px 0 #7c2d12;
-  padding: 3px 12px;
+  padding: 2.5px 10px;
   border-radius: 999px;
   line-height: 1.2;
   white-space: nowrap;
@@ -239,8 +251,8 @@ body.theme-candy {
   border: 2px solid #9a3412;
   box-shadow: 0 2px 0 #9a3412;
   color: #9a3412;
-  font-size: 14px;
-  padding: 3px 12px;
+  font-size: 13.5px;
+  padding: 2.5px 10px;
   border-radius: 999px;
   cursor: pointer;
   display: flex;
@@ -636,6 +648,9 @@ body.theme-candy {
     padding-top: max(16px, env(safe-area-inset-top, 16px));
     padding-left: 24px;
     padding-right: 24px;
+  }
+  .top-bar {
+    min-height: 96px;
   }
   .nav-home-btn,
   .icon-btn {
