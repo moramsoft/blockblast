@@ -7,6 +7,7 @@ import { GameRenderer } from './renderer';
 import { sound } from './audio';
 import { haptics } from './haptics';
 import { ThemeId } from './types';
+import { APP_VERSION } from './version';
 
 // DOM Elements
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
@@ -40,6 +41,10 @@ const startClassicBtn = document.getElementById('startClassicBtn') as HTMLButton
 const startDailyTitleBtn = document.getElementById('startDailyTitleBtn') as HTMLButtonElement;
 const resumeBtn = document.getElementById('resumeBtn') as HTMLButtonElement;
 const comfortModeCheckbox = document.getElementById('comfortModeCheckbox') as HTMLInputElement;
+const titleVersionBadge = document.getElementById('titleVersionBadge');
+if (titleVersionBadge) {
+  titleVersionBadge.textContent = APP_VERSION;
+}
 
 // Assist & Tutorial Elements
 const assistBar = document.getElementById('assistBar') as HTMLDivElement;
