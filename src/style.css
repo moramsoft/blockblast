@@ -415,7 +415,8 @@ body.theme-candy {
 }
 
 .action-btn,
-.senior-action-btn {
+.senior-action-btn,
+.booster-pedestal {
   font-family: 'Jua', sans-serif;
   width: 60px;
   height: 60px;
@@ -430,83 +431,41 @@ body.theme-candy {
   position: relative;
   transition: transform 0.08s ease, box-shadow 0.08s ease;
   box-sizing: border-box;
+  background: linear-gradient(180deg, #ffffff 0%, #fef9c3 40%, #fde68a 80%, #f59e0b 100%);
+  border: 2.5px solid #b45309;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.9), 0 5px 0 #78350f, 0 8px 16px rgba(120, 53, 15, 0.28);
 }
 
 .action-btn:active,
-.senior-action-btn:active {
+.senior-action-btn:active,
+.booster-pedestal:active {
   transform: translateY(3px);
-}
-
-/* 3D Medallion Themes */
-.medal-mint {
-  background: linear-gradient(180deg, #6ee7b7 0%, #10b981 50%, #047857 100%);
-  border: 3px solid #064e3b;
-  box-shadow: 0 6px 0 #064e3b, 0 8px 16px rgba(6, 78, 59, 0.35);
-  color: #ffffff;
-}
-.medal-mint:active {
-  box-shadow: 0 2px 0 #064e3b;
-}
-
-.medal-gold {
-  background: linear-gradient(180deg, #fde047 0%, #eab308 50%, #ca8a04 100%);
-  border: 3px solid #713f12;
-  box-shadow: 0 6px 0 #713f12, 0 8px 16px rgba(113, 63, 18, 0.35);
-  color: #ffffff;
-}
-.medal-gold:active {
-  box-shadow: 0 2px 0 #713f12;
-}
-
-.medal-sky {
-  background: linear-gradient(180deg, #7dd3fc 0%, #0ea5e9 50%, #0369a1 100%);
-  border: 3px solid #0c4a6e;
-  box-shadow: 0 6px 0 #0c4a6e, 0 8px 16px rgba(12, 74, 110, 0.35);
-  color: #ffffff;
-}
-.medal-sky:active {
-  box-shadow: 0 2px 0 #0c4a6e;
-}
-
-.medal-coral {
-  background: linear-gradient(180deg, #fda4af 0%, #f43f5e 50%, #be123c 100%);
-  border: 3px solid #881337;
-  box-shadow: 0 6px 0 #881337, 0 8px 16px rgba(136, 19, 55, 0.35);
-  color: #ffffff;
-}
-.medal-coral:active {
-  box-shadow: 0 2px 0 #881337;
-}
-
-.medal-purple {
-  background: linear-gradient(180deg, #c4b5fd 0%, #8b5cf6 50%, #6d28d9 100%);
-  border: 3px solid #4c1d95;
-  box-shadow: 0 6px 0 #4c1d95, 0 8px 16px rgba(76, 29, 149, 0.35);
-  color: #ffffff;
-}
-.medal-purple:active {
-  box-shadow: 0 2px 0 #4c1d95;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 2px 0 #78350f, 0 4px 8px rgba(120, 53, 15, 0.2);
 }
 
 .action-btn.active-mode,
-.senior-action-btn.active-mode {
-  border-color: #facc15;
-  box-shadow: 0 6px 0 #9a3412, 0 0 18px rgba(250, 204, 21, 0.95);
+.senior-action-btn.active-mode,
+.booster-pedestal.active-mode {
+  border-color: #f59e0b;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.95), 0 5px 0 #92400e, 0 0 22px rgba(245, 158, 11, 0.9);
   animation: pulseActiveBooster 0.9s infinite alternate ease-in-out;
 }
 
 @keyframes pulseActiveBooster {
   0% { transform: scale(1); filter: brightness(1); }
-  100% { transform: scale(1.08); filter: brightness(1.25); }
+  100% { transform: scale(1.08); filter: brightness(1.15); }
 }
 
+.booster-3d-img,
 .action-btn .action-svg,
 .senior-action-btn .action-svg {
-  width: 34px;
-  height: 34px;
+  width: 44px;
+  height: 44px;
   display: block;
-  stroke: #ffffff !important;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.32));
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Visually hidden action-btn-text */
@@ -597,17 +556,20 @@ body.theme-candy {
     padding: 16px 28px max(28px, env(safe-area-inset-bottom, 28px));
   }
   .action-btn,
-  .senior-action-btn {
+  .senior-action-btn,
+  .booster-pedestal {
     width: 92px;
     height: 92px;
     min-width: 92px;
     min-height: 92px;
     border-width: 4px;
+    box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.9), 0 7px 0 #78350f, 0 12px 22px rgba(120, 53, 15, 0.32);
   }
+  .booster-3d-img,
   .action-btn .action-svg,
   .senior-action-btn .action-svg {
-    width: 54px;
-    height: 54px;
+    width: 68px;
+    height: 68px;
   }
   .action-badge,
   .assist-badge {
@@ -1269,40 +1231,14 @@ dialog::backdrop {
   width: 100%;
 }
 
-/* Senior Comfort Mode Default Overrides */
-.comfort-mode .senior-action-btn {
-  height: 40px;
-  min-height: unset;
-}
-
-.comfort-mode .action-btn-text {
-  font-size: 13px;
-}
-
-.comfort-mode .action-badge {
-  font-size: 10px;
-}
-
-.comfort-mode .main-score-val {
-  font-size: 40px !important;
-}
-
-.comfort-mode .icon-btn {
-  width: 40px;
-  height: 40px;
+/* Senior Comfort Mode Enhancements (Preserves perfect circular proportions) */
+.comfort-mode .senior-action-btn,
+.comfort-mode .booster-pedestal {
+  aspect-ratio: 1 / 1;
 }
 
 .comfort-mode .tutorial-card {
-  padding: 10px 14px;
-}
-
-.comfort-mode .tutorial-info {
-  font-size: 14px;
-}
-
-.comfort-mode .tutorial-ok-btn {
-  font-size: 14px;
-  padding: 7px 14px;
+  padding: 8px 14px;
 }
 
 /* =========================================================
