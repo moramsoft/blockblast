@@ -10,6 +10,7 @@
     "test:e2e:web": "npm run build && npx playwright test",
     "test:e2e:android": "bash scripts/e2e-android.sh",
     "test:e2e:ios": "bash scripts/e2e-ios.sh",
+    "test:visual": "npm run build && npx playwright test tests/e2e/visual-aesthetic.e2e.spec.ts --project=android-webview",
     "test": "npm run test:unit && npm run test:e2e:web",
     "release:gate": "bash scripts/release-gate.sh all",
     "preview": "vite preview",

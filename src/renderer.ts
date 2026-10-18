@@ -41,8 +41,8 @@ export class GameRenderer {
     const topPad = 12;
     const gapBoardDock = Math.max(14, Math.min(26, Math.floor(height * 0.025)));
     const minDockHeight = 76;
-    const maxDockHeight = width >= 600 ? 140 : 116;
-    const maxBoardLimit = width >= 600 ? 580 : 460;
+    const maxDockHeight = width >= 600 ? 156 : 116;
+    const maxBoardLimit = width >= 600 ? 620 : 460;
 
     // Reserve height for dock + gaps so board + dock always fit inside canvas
     const availHeightForBoardAndDock = Math.max(260, height - topPad - bottomPad - gapBoardDock);
