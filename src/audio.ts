@@ -565,6 +565,69 @@ class SoundManager {
     osc.start(t);
     osc.stop(t + 0.17);
   }
+
+  // 13. Disappointed cartoon slide-whistle "뾰요용" (No Moves Left)
+  public playNoMovesPpyoyoyong() {
+    if (this.isMuted) return;
+    this.initCtx();
+    if (!this.ctx) return;
+
+    const t = this.ctx.currentTime;
+
+    // Carrier Oscillator - warm rounded tone (triangle)
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+
+    // LFO Oscillator - provides the iconic cartoon spring wobble ("요-용")
+    const lfo = this.ctx.createOscillator();
+    const lfoGain = this.ctx.createGain();
+
+    osc.type = 'triangle';
+
+    // Pitch trajectory: 587Hz ("뾰") -> 440Hz -> 293Hz ("요") -> 164Hz ("용")
+    osc.frequency.setValueAtTime(587.33, t);
+    osc.frequency.exponentialRampToValueAtTime(440.0, t + 0.14);
+    osc.frequency.exponentialRampToValueAtTime(293.66, t + 0.36);
+    osc.frequency.exponentialRampToValueAtTime(164.81, t + 0.68);
+
+    // LFO Wobble settings: 11Hz vibrato kicks in as the pitch drops
+    lfo.type = 'sine';
+    lfo.frequency.setValueAtTime(11, t);
+    lfoGain.gain.setValueAtTime(2, t);
+    lfoGain.gain.linearRampToValueAtTime(32, t + 0.2);
+    lfoGain.gain.linearRampToValueAtTime(18, t + 0.5);
+    lfoGain.gain.linearRampToValueAtTime(0, t + 0.68);
+
+    lfo.connect(osc.frequency);
+
+    // Amplitude envelope: quick rise, juicy sustain on the slide, gentle taper
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.24, t + 0.03);
+    gain.gain.setValueAtTime(0.21, t + 0.25);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.72);
+
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+
+    // Subtle harmonizing sub-whistle for cartoon depth
+    const subOsc = this.ctx.createOscillator();
+    const subGain = this.ctx.createGain();
+    subOsc.type = 'sine';
+    subOsc.frequency.setValueAtTime(293.66, t);
+    subOsc.frequency.exponentialRampToValueAtTime(146.83, t + 0.68);
+    subGain.gain.setValueAtTime(0, t);
+    subGain.gain.linearRampToValueAtTime(0.12, t + 0.04);
+    subGain.gain.exponentialRampToValueAtTime(0.001, t + 0.68);
+    subOsc.connect(subGain);
+    subGain.connect(this.ctx.destination);
+
+    lfo.start(t);
+    lfo.stop(t + 0.72);
+    osc.start(t);
+    osc.stop(t + 0.72);
+    subOsc.start(t);
+    subOsc.stop(t + 0.7);
+  }
 }
 
 export const sound = new SoundManager();

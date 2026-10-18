@@ -486,7 +486,6 @@ export class BlockBlastGame {
     if (!anyCanPlace && remainingPiecesCount > 0) {
       if ((this.mode === 'classic' || this.mode === 'relaxed') && !this.isStuck && this.hasRescueAvailable()) {
         this.isStuck = true;
-        sound.playInvalid();
         if (this.onStuckCallback) {
           this.onStuckCallback();
         }

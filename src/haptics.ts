@@ -73,6 +73,18 @@ class HapticManager {
       }
     }
   }
+
+  // Warning buzz for stuck / no moves left
+  public async warning() {
+    if (!this.isSupported) return;
+    try {
+      await Haptics.notification({ type: NotificationType.Warning });
+    } catch {
+      if (navigator.vibrate) {
+        navigator.vibrate([40, 30, 40]);
+      }
+    }
+  }
 }
 
 export const haptics = new HapticManager();

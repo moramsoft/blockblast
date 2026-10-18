@@ -157,9 +157,26 @@ const renderer = new GameRenderer(canvas);
 // Rolling Score Display state
 let displayedScore = 0;
 
+// Stuck / No Moves Left Delay Timer
+let stuckModalTimer: number | null = null;
+
+function clearStuckTimer() {
+  if (stuckModalTimer !== null) {
+    clearTimeout(stuckModalTimer);
+    stuckModalTimer = null;
+  }
+}
+
 // Register Callbacks
 game.onStuckCallback = () => {
-  openStuckModal();
+  clearStuckTimer();
+  // Allow player ~850ms to observe board and dock before popping up
+  stuckModalTimer = window.setTimeout(() => {
+    stuckModalTimer = null;
+    if (game.isStuck && !game.isGameOver) {
+      openStuckModal();
+    }
+  }, 850);
 };
 
 game.onDailyVictoryCallback = () => {
@@ -713,6 +730,12 @@ claimAdCoinsBtn.addEventListener('click', () => {
 
 // Stuck Rescue Modal Flow (Safe & Validated)
 function openStuckModal() {
+  clearStuckTimer();
+
+  // Play disappointed comic "뾰요용" sound and warning haptics
+  sound.playNoMovesPpyoyoyong();
+  haptics.warning();
+
   // Update button subtitles
   rescueHammerSub.textContent =
     game.boosters.hammer > 0
@@ -856,6 +879,9 @@ window.addEventListener('keydown', (e) => {
 
 // Sync UI Score, Badges, and Modes
 function syncUI() {
+  if (!game.isStuck) {
+    clearStuckTimer();
+  }
   bestScoreText.textContent = game.bestScore.toLocaleString();
   headerCoinsText.textContent = game.coins.toLocaleString();
 
