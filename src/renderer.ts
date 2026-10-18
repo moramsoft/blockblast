@@ -24,7 +24,7 @@ export class GameRenderer {
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d', { alpha: false })!;
+    this.ctx = canvas.getContext('2d', { alpha: true })!;
     this.layout = this.computeLayout(canvas.width, canvas.height);
   }
 
@@ -36,26 +36,32 @@ export class GameRenderer {
   }
 
   public computeLayout(width: number, height: number): LayoutInfo {
-    const padX = 16;
-    const bottomPad = 18;
-    const gapBoardDock = Math.max(12, Math.min(22, Math.floor(height * 0.025)));
-    const minDockHeight = 72;
+    const padX = 18;
+    const bottomPad = 14;
+    const topPad = 12;
+    const gapBoardDock = Math.max(14, Math.min(22, Math.floor(height * 0.025)));
+    const minDockHeight = 76;
+    const maxDockHeight = 116;
 
-    // Board size must fit available width AND leave sufficient height for dock and margins
-    const maxBoardFromHeight = Math.max(190, height - minDockHeight - gapBoardDock - bottomPad - 24);
-    const maxBoardWidth = Math.min(width - padX * 2, maxBoardFromHeight, 480);
+    // Reserve height for dock + gaps so board + dock always fit inside canvas
+    const availHeightForBoardAndDock = Math.max(260, height - topPad - bottomPad - gapBoardDock);
+    const idealBoardFromHeight = availHeightForBoardAndDock - minDockHeight;
+    const maxBoardWidth = Math.min(width - padX * 2, idealBoardFromHeight, 480);
+
     const cellGap = Math.max(3, Math.floor(maxBoardWidth / 70));
     const cellSize = (maxBoardWidth - (BOARD_SIZE - 1) * cellGap) / BOARD_SIZE;
     const boardSize = BOARD_SIZE * cellSize + (BOARD_SIZE - 1) * cellGap;
     const boardX = (width - boardSize) / 2;
 
-    const remainingHeight = height - boardSize;
-    const topMargin = Math.max(8, Math.min(24, (remainingHeight - minDockHeight - gapBoardDock - bottomPad) * 0.35));
-    const boardY = topMargin;
+    // Dock height scales proportionally with boardSize, strictly capped between minDockHeight and maxDockHeight
+    const rawDockH = Math.min(maxDockHeight, Math.max(minDockHeight, Math.floor(boardSize * 0.27)));
+    const dockHeight = Math.max(68, Math.min(rawDockH, height - topPad - bottomPad - boardSize - gapBoardDock));
 
-    // Dock positioning: strictly contained within canvas!
+    const totalContentH = boardSize + gapBoardDock + dockHeight;
+    const extraVerticalSpace = Math.max(0, height - topPad - bottomPad - totalContentH);
+    const boardY = topPad + Math.min(28, extraVerticalSpace * 0.35);
+
     const dockY = boardY + boardSize + gapBoardDock;
-    const dockHeight = Math.max(minDockHeight, height - dockY - bottomPad);
     const dockSlotWidth = (boardSize - 2 * 10) / 3;
 
     const dockSlots = [0, 1, 2].map((i) => ({
@@ -101,10 +107,10 @@ export class GameRenderer {
       ctx.translate(sx, sy);
     }
 
-    // Themed Background
+    // Clear canvas so the illustrated garden background shines through
     this.drawBackground(game.theme, width, height);
 
-    // Draw Board Background Frame (with subtle Danger Warning Vignette if 75%+ full)
+    // Draw 3D Tactile Board Frame
     this.drawBoardFrame(game);
 
     // Draw Grid Cells, Jelly Bounces, Domino Highlights, Hammer Targets
@@ -113,7 +119,7 @@ export class GameRenderer {
     // Draw Line Clear Previews
     this.drawLineClearingGlow(game);
 
-    // Draw Dock Slots & Rotate Mode Highlights
+    // Draw 3D Cushion Dock Slots & Rotate Mode Highlights
     this.drawDock(game);
 
     // Draw Particles & Floating Texts & Shockwaves
@@ -125,81 +131,120 @@ export class GameRenderer {
     ctx.restore();
   }
 
-  private drawBackground(theme: ThemeId, width: number, height: number) {
+  private drawBackground(_theme: ThemeId, width: number, height: number) {
     const ctx = this.ctx;
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, height);
-
-    if (theme === 'wood') {
-      bgGrad.addColorStop(0, '#231815');
-      bgGrad.addColorStop(0.5, '#160e0c');
-      bgGrad.addColorStop(1, '#0e0705');
-    } else if (theme === 'candy') {
-      bgGrad.addColorStop(0, '#261440');
-      bgGrad.addColorStop(0.5, '#190a2e');
-      bgGrad.addColorStop(1, '#0f051e');
-    } else {
-      bgGrad.addColorStop(0, '#0f172a');
-      bgGrad.addColorStop(0.5, '#090d16');
-      bgGrad.addColorStop(1, '#050811');
-    }
-
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
   }
 
   private drawBoardFrame(game: BlockBlastGame) {
     const { boardX, boardY, boardSize } = this.layout;
     const ctx = this.ctx;
-    const pad = 8;
-    const r = 16;
+    const outerPad = 11;
+    const innerPad = 5;
+    const outerR = 24;
+    const innerR = 18;
     const isDanger = game.isBoardDanger();
 
     ctx.save();
+
+    // Theme palette for 3D board frame
+    let frameTop = '#fde68a';
+    let frameBottom = '#f59e0b';
+    let frameLip = '#7c2d12';
+    let wellBg = '#2c1854';
+    let wellBorder = '#1b0d38';
+
+    if (game.theme === 'wood') {
+      frameTop = '#f5d0a9';
+      frameBottom = '#c27838';
+      frameLip = '#5c2d0c';
+      wellBg = '#361f12';
+      wellBorder = '#211108';
+    } else if (game.theme === 'candy') {
+      frameTop = '#fbcfe8';
+      frameBottom = '#ec4899';
+      frameLip = '#831843';
+      wellBg = '#38154c';
+      wellBorder = '#220a30';
+    }
+
     if (isDanger) {
       const dangerPulse = 0.5 + Math.sin(this.animTime * 8) * 0.4;
-      ctx.shadowColor = `rgba(239, 68, 68, ${0.45 + dangerPulse * 0.45})`;
+      ctx.shadowColor = `rgba(239, 68, 68, ${0.55 + dangerPulse * 0.4})`;
       ctx.shadowBlur = 24;
       ctx.shadowOffsetY = 6;
     } else {
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.65)';
-      ctx.shadowBlur = 24;
+      ctx.shadowColor = 'rgba(45, 15, 80, 0.35)';
+      ctx.shadowBlur = 20;
       ctx.shadowOffsetY = 10;
     }
 
-    if (game.theme === 'wood') {
-      ctx.fillStyle = '#2d1c14';
-      ctx.beginPath();
-      ctx.roundRect(boardX - pad, boardY - pad, boardSize + pad * 2, boardSize + pad * 2, r);
-      ctx.fill();
-      ctx.strokeStyle = isDanger ? '#ef4444' : '#4e3326';
-    } else if (game.theme === 'candy') {
-      ctx.fillStyle = '#2b1747';
-      ctx.beginPath();
-      ctx.roundRect(boardX - pad, boardY - pad, boardSize + pad * 2, boardSize + pad * 2, r);
-      ctx.fill();
-      ctx.strokeStyle = isDanger ? '#ef4444' : '#502a82';
-    } else {
-      ctx.fillStyle = '#111827';
-      ctx.beginPath();
-      ctx.roundRect(boardX - pad, boardY - pad, boardSize + pad * 2, boardSize + pad * 2, r);
-      ctx.fill();
-      ctx.strokeStyle = isDanger ? '#ef4444' : '#1e293b';
-    }
+    // 1. 3D Bottom Lip of outer frame
+    ctx.fillStyle = isDanger ? '#991b1b' : frameLip;
+    ctx.beginPath();
+    ctx.roundRect(
+      boardX - outerPad,
+      boardY - outerPad + 6,
+      boardSize + outerPad * 2,
+      boardSize + outerPad * 2,
+      outerR
+    );
+    ctx.fill();
 
-    ctx.lineWidth = isDanger ? 3 : 2;
+    ctx.shadowColor = 'transparent';
+
+    // 2. Main Outer 3D Frame Body
+    const frameGrad = ctx.createLinearGradient(
+      0,
+      boardY - outerPad,
+      0,
+      boardY + boardSize + outerPad
+    );
+    frameGrad.addColorStop(0, frameTop);
+    frameGrad.addColorStop(1, frameBottom);
+    ctx.fillStyle = frameGrad;
+    ctx.beginPath();
+    ctx.roundRect(
+      boardX - outerPad,
+      boardY - outerPad,
+      boardSize + outerPad * 2,
+      boardSize + outerPad * 2,
+      outerR
+    );
+    ctx.fill();
+
+    ctx.strokeStyle = isDanger ? '#ef4444' : frameLip;
+    ctx.lineWidth = 3;
     ctx.stroke();
+
+    // 3. Inner Recessed Velvet Board Well
+    ctx.fillStyle = wellBg;
+    ctx.beginPath();
+    ctx.roundRect(
+      boardX - innerPad,
+      boardY - innerPad,
+      boardSize + innerPad * 2,
+      boardSize + innerPad * 2,
+      innerR
+    );
+    ctx.fill();
+
+    ctx.strokeStyle = wellBorder;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
     ctx.restore();
   }
 
   private drawGrid(game: BlockBlastGame) {
     const { cellSize } = this.layout;
     const ctx = this.ctx;
-    const cornerRadius = Math.max(4, cellSize * (game.theme === 'candy' ? 0.24 : 0.16));
+    const cornerRadius = Math.max(5, cellSize * 0.22);
 
     const slotBg =
-      game.theme === 'wood' ? '#1c110b' : game.theme === 'candy' ? '#1c0f33' : '#172033';
+      game.theme === 'wood' ? '#26140b' : game.theme === 'candy' ? '#290d3a' : '#20103d';
     const slotBorder =
-      game.theme === 'wood' ? '#2f1e15' : game.theme === 'candy' ? '#2f1854' : '#222f4c';
+      game.theme === 'wood' ? '#4a2a18' : game.theme === 'candy' ? '#52206e' : '#3d246c';
 
     // Check preview line clear rows & cols
     const clearRows = game.preview?.clearRows || [];
@@ -223,7 +268,7 @@ export class GameRenderer {
         const { x, y } = this.getCellCoord(c, r);
         const cell = game.grid[r][c];
 
-        // Draw empty slot backing
+        // Draw empty recessed pocket
         ctx.fillStyle = slotBg;
         ctx.beginPath();
         ctx.roundRect(x, y, cellSize, cellSize, cornerRadius);
@@ -232,6 +277,12 @@ export class GameRenderer {
         ctx.strokeStyle = slotBorder;
         ctx.lineWidth = 1.5;
         ctx.stroke();
+
+        // Subtle inner pocket top shadow
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.22)';
+        ctx.beginPath();
+        ctx.roundRect(x + 1.5, y + 1.5, cellSize - 3, cellSize * 0.22, cornerRadius * 0.7);
+        ctx.fill();
 
         // Draw occupied block
         if (cell) {
@@ -310,12 +361,12 @@ export class GameRenderer {
 
       ctx.save();
       const pulse = 0.5 + Math.sin(this.animTime * 12) * 0.4;
-      ctx.fillStyle = `rgba(239, 68, 68, ${0.15 + pulse * 0.1})`;
+      ctx.fillStyle = `rgba(239, 68, 68, ${0.18 + pulse * 0.12})`;
       ctx.beginPath();
       ctx.roundRect(topLeft.x, topLeft.y, boxW, boxH, 12);
       ctx.fill();
 
-      ctx.strokeStyle = `rgba(239, 68, 68, ${0.75 + pulse * 0.25})`;
+      ctx.strokeStyle = `rgba(255, 255, 255, ${0.85 + pulse * 0.15})`;
       ctx.lineWidth = 3;
       ctx.setLineDash([8, 6]);
       ctx.stroke();
@@ -356,7 +407,7 @@ export class GameRenderer {
                   shadowColor: piece.shape.shadowColor,
                   colorKey: piece.shape.colorKey,
                 },
-                0.72,
+                0.75,
                 game.theme
               );
             }
@@ -380,13 +431,13 @@ export class GameRenderer {
             if (matrix[pr][pc] === 1) {
               const { x, y } = this.getCellCoord(gridX + pc, gridY + pr);
               ctx.save();
-              ctx.fillStyle = `rgba(255, 214, 0, ${0.22 + pulse * 0.15})`;
+              ctx.fillStyle = `rgba(255, 230, 60, ${0.28 + pulse * 0.18})`;
               ctx.beginPath();
               ctx.roundRect(x, y, cellSize, cellSize, cornerRadius);
               ctx.fill();
 
-              ctx.strokeStyle = `rgba(255, 214, 0, ${0.75 + pulse * 0.25})`;
-              ctx.lineWidth = 2.5;
+              ctx.strokeStyle = `rgba(255, 240, 100, ${0.85 + pulse * 0.15})`;
+              ctx.lineWidth = 3;
               ctx.stroke();
               ctx.restore();
             }
@@ -408,14 +459,14 @@ export class GameRenderer {
 
     ctx.save();
     ctx.lineWidth = 3.5;
-    ctx.strokeStyle = `rgba(255, 230, 90, ${0.75 + pulse * 0.25})`;
-    ctx.fillStyle = `rgba(255, 235, 120, ${0.18 + pulse * 0.12})`;
+    ctx.strokeStyle = `rgba(255, 240, 120, ${0.8 + pulse * 0.2})`;
+    ctx.fillStyle = `rgba(255, 240, 130, ${0.22 + pulse * 0.14})`;
 
     // Highlight clearing rows
     for (const r of clearRows) {
       const y = boardY + r * (cellSize + cellGap);
       ctx.beginPath();
-      ctx.roundRect(boardX, y, boardSize, cellSize, 8);
+      ctx.roundRect(boardX, y, boardSize, cellSize, 10);
       ctx.fill();
       ctx.stroke();
     }
@@ -424,7 +475,7 @@ export class GameRenderer {
     for (const c of clearCols) {
       const x = boardX + c * (cellSize + cellGap);
       ctx.beginPath();
-      ctx.roundRect(x, boardY, cellSize, boardSize, 8);
+      ctx.roundRect(x, boardY, cellSize, boardSize, 10);
       ctx.fill();
       ctx.stroke();
     }
@@ -441,19 +492,19 @@ export class GameRenderer {
     alpha: number = 1,
     theme: ThemeId = 'neon'
   ) {
-    const r = Math.max(4, size * (theme === 'candy' ? 0.26 : 0.18));
+    const r = Math.max(5, size * 0.24);
 
     ctx.save();
     ctx.globalAlpha = alpha;
 
-    // Drop Shadow
-    if (alpha >= 0.9) {
-      ctx.shadowColor = cell.shadowColor;
-      ctx.shadowBlur = size * 0.25;
+    // Soft 3D Drop Shadow
+    if (alpha >= 0.85) {
+      ctx.shadowColor = 'rgba(30, 10, 60, 0.38)';
+      ctx.shadowBlur = size * 0.18;
       ctx.shadowOffsetY = size * 0.08;
     }
 
-    // Main Gradient Body
+    // Main Glossy Jelly Gradient Body
     const grad = ctx.createLinearGradient(x, y, x, y + size);
     grad.addColorStop(0, cell.gradient[0]);
     grad.addColorStop(1, cell.gradient[1]);
@@ -465,94 +516,63 @@ export class GameRenderer {
 
     ctx.shadowColor = 'transparent';
 
-    // Theme Specific Artistry:
+    // 3D Bottom Lip / Bevel (matches Title Screen .fb jelly cubes!)
+    const bevelH = Math.max(3, size * 0.17);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.24)';
+    ctx.beginPath();
+    ctx.roundRect(x + 1, y + size - bevelH, size - 2, bevelH, [0, 0, r * 0.9, r * 0.9]);
+    ctx.fill();
+
+    // Theme-specific subtle texture for Wood
     if (theme === 'wood') {
-      // Wood Grain Texture Lines
-      ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.strokeStyle = 'rgba(60, 25, 5, 0.18)';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
-      ctx.moveTo(x + size * 0.2, y + size * 0.1);
-      ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.4, x + size * 0.8, y + size * 0.2);
-      ctx.moveTo(x + size * 0.15, y + size * 0.6);
-      ctx.quadraticCurveTo(x + size * 0.6, y + size * 0.8, x + size * 0.85, y + size * 0.7);
+      ctx.moveTo(x + size * 0.18, y + size * 0.25);
+      ctx.quadraticCurveTo(x + size * 0.5, y + size * 0.42, x + size * 0.82, y + size * 0.28);
+      ctx.moveTo(x + size * 0.15, y + size * 0.62);
+      ctx.quadraticCurveTo(x + size * 0.55, y + size * 0.78, x + size * 0.85, y + size * 0.68);
       ctx.stroke();
-
-      // Warm Bevel Border
-      ctx.strokeStyle = cell.borderColor;
-      ctx.lineWidth = Math.max(1, size * 0.04);
-      ctx.stroke();
-    } else if (theme === 'candy') {
-      // Cute Sugar White Arc Highlight
-      const highlightPad = size * 0.14;
-      const highlightHeight = size * 0.32;
-      const hlGrad = ctx.createLinearGradient(x, y, x, y + highlightHeight);
-      hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.85)');
-      hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0.1)');
-
-      ctx.fillStyle = hlGrad;
-      ctx.beginPath();
-      ctx.roundRect(
-        x + highlightPad,
-        y + highlightPad * 0.7,
-        size - highlightPad * 2,
-        highlightHeight,
-        r * 0.8
-      );
-      ctx.fill();
-
-      // Candy Specular Dot
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-      ctx.beginPath();
-      ctx.arc(x + size * 0.75, y + size * 0.28, Math.max(1.5, size * 0.06), 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = cell.borderColor;
-      ctx.lineWidth = Math.max(1, size * 0.04);
-      ctx.stroke();
-    } else {
-      // Classic Neon Jewel Gloss & Bevel
-      ctx.strokeStyle = cell.borderColor;
-      ctx.lineWidth = Math.max(1, size * 0.04);
-      ctx.stroke();
-
-      const highlightPad = size * 0.12;
-      const highlightHeight = size * 0.28;
-      const hlGrad = ctx.createLinearGradient(x, y, x, y + highlightHeight);
-      hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.65)');
-      hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
-
-      ctx.fillStyle = hlGrad;
-      ctx.beginPath();
-      ctx.roundRect(
-        x + highlightPad,
-        y + highlightPad * 0.7,
-        size - highlightPad * 2,
-        highlightHeight,
-        r * 0.7
-      );
-      ctx.fill();
-
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-      ctx.beginPath();
-      ctx.roundRect(
-        x + highlightPad,
-        y + size - highlightHeight * 0.6,
-        size - highlightPad * 2,
-        highlightHeight * 0.4,
-        r * 0.5
-      );
-      ctx.fill();
     }
+
+    // Top Glossy Candy Arc Highlight
+    const hlPad = size * 0.13;
+    const hlHeight = size * 0.32;
+    const hlGrad = ctx.createLinearGradient(x, y + hlPad * 0.5, x, y + hlHeight);
+    hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.75)');
+    hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0.05)');
+
+    ctx.fillStyle = hlGrad;
+    ctx.beginPath();
+    ctx.roundRect(x + hlPad, y + hlPad * 0.65, size - hlPad * 2, hlHeight, r * 0.75);
+    ctx.fill();
+
+    // Cute Jelly Specular Shine Dot (Top-Left, matching Title Screen .fb::after)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.82)';
+    ctx.save();
+    ctx.translate(x + size * 0.26, y + size * 0.22);
+    ctx.rotate(-0.25);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, Math.max(2, size * 0.11), Math.max(1.3, size * 0.065), 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Crisp Outer Contour for Senior High-Contrast Readability
+    ctx.strokeStyle = 'rgba(35, 15, 65, 0.38)';
+    ctx.lineWidth = Math.max(1.2, size * 0.045);
+    ctx.beginPath();
+    ctx.roundRect(x, y, size, size, r);
+    ctx.stroke();
 
     // Draw Faceted Sparkle Gem if cell.hasGem === true (Daily gem goals!)
     if (cell.hasGem) {
-      const gemRadius = size * 0.24;
+      const gemRadius = size * 0.26;
       const midX = x + size / 2;
       const midY = y + size / 2;
 
       ctx.save();
-      ctx.fillStyle = '#38bdf8';
-      ctx.shadowColor = '#00e5ff';
+      ctx.fillStyle = '#fef08a';
+      ctx.shadowColor = '#facc15';
       ctx.shadowBlur = 10;
 
       ctx.beginPath();
@@ -563,8 +583,12 @@ export class GameRenderer {
       ctx.closePath();
       ctx.fill();
 
+      ctx.strokeStyle = '#854d0e';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
       // Top-right facet highlight
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
       ctx.beginPath();
       ctx.moveTo(midX, midY - gemRadius);
       ctx.lineTo(midX + gemRadius, midY);
@@ -582,48 +606,66 @@ export class GameRenderer {
     const { dockSlots, cellSize } = this.layout;
     const ctx = this.ctx;
 
-    const slotBg =
-      game.theme === 'wood' ? '#261711' : game.theme === 'candy' ? '#271440' : '#111827';
-    const slotBorder =
-      game.theme === 'wood' ? '#3d251b' : game.theme === 'candy' ? '#472274' : '#1e293b';
+    const cardTop =
+      game.theme === 'wood' ? '#fffbeb' : game.theme === 'candy' ? '#fff1f2' : '#ffffff';
+    const cardBottom =
+      game.theme === 'wood' ? '#fde68a' : game.theme === 'candy' ? '#fce7f3' : '#f3e8ff';
+    const borderCol =
+      game.theme === 'wood' ? '#7c2d12' : game.theme === 'candy' ? '#831843' : '#4c1d95';
 
     for (let i = 0; i < 3; i++) {
       const slot = dockSlots[i];
       const piece = game.dock[i];
+      const r = 18;
 
-      ctx.fillStyle = slotBg;
+      ctx.save();
+
+      // 3D Bottom Cushion Lip
+      ctx.fillStyle = borderCol;
       ctx.beginPath();
-      ctx.roundRect(slot.x, slot.y, slot.width, slot.height, 14);
+      ctx.roundRect(slot.x, slot.y + 4, slot.width, slot.height, r);
+      ctx.fill();
+
+      // Main Cream/Lavender 3D Cushion Card
+      const grad = ctx.createLinearGradient(0, slot.y, 0, slot.y + slot.height);
+      grad.addColorStop(0, cardTop);
+      grad.addColorStop(1, cardBottom);
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(slot.x, slot.y, slot.width, slot.height, r);
       ctx.fill();
 
       // Active Hint Pulse on recommended dock piece
       if (game.activeHint && game.activeHint.dockIndex === i && game.draggedIndex === null && piece) {
         const pulse = 0.5 + Math.sin(this.animTime * 8) * 0.4;
-        ctx.strokeStyle = `rgba(255, 214, 0, ${0.75 + pulse * 0.25})`;
+        ctx.strokeStyle = `rgba(234, 88, 12, ${0.8 + pulse * 0.2})`;
+        ctx.lineWidth = 3.5;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.font = '400 13px "Jua", system-ui, sans-serif';
+        ctx.fillStyle = '#c2410c';
+        ctx.textAlign = 'center';
+        ctx.fillText('✨ 추천', slot.x + slot.width / 2, slot.y + 18);
+        ctx.restore();
+      } else if (game.activeMode === 'rotate' && piece) {
+        const pulse = 0.5 + Math.sin(this.animTime * 10) * 0.4;
+        ctx.strokeStyle = `rgba(37, 99, 235, ${0.75 + pulse * 0.25})`;
         ctx.lineWidth = 3;
         ctx.stroke();
 
         ctx.save();
-        ctx.font = 'bold 12px system-ui';
-        ctx.fillStyle = '#ffd600';
-        ctx.fillText('✨ HINT', slot.x + slot.width / 2 - 22, slot.y + 18);
-        ctx.restore();
-      } else if (game.activeMode === 'rotate' && piece) {
-        const pulse = 0.5 + Math.sin(this.animTime * 10) * 0.4;
-        ctx.strokeStyle = `rgba(0, 229, 255, ${0.7 + pulse * 0.3})`;
-        ctx.lineWidth = 2.5;
-        ctx.stroke();
-
-        ctx.save();
         ctx.font = '16px system-ui';
-        ctx.fillStyle = '#00e5ff';
-        ctx.fillText('🔄', slot.x + slot.width - 24, slot.y + 24);
+        ctx.fillStyle = '#2563eb';
+        ctx.fillText('🔄', slot.x + slot.width - 24, slot.y + 22);
         ctx.restore();
       } else {
-        ctx.strokeStyle = slotBorder;
-        ctx.lineWidth = 1.5;
+        ctx.strokeStyle = borderCol;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
       }
+
+      ctx.restore();
 
       if (!piece || game.draggedIndex === i) continue;
 
@@ -652,8 +694,8 @@ export class GameRenderer {
     let totalH = rows * miniCellSize + (rows - 1) * miniGap;
 
     // Safety scale down: piece must always fit within slot bounds with padding
-    const availW = slot.width - 12;
-    const availH = slot.height - 12;
+    const availW = slot.width - 14;
+    const availH = slot.height - 14;
     if (totalW > availW || totalH > availH) {
       const scale = Math.min(availW / totalW, availH / totalH);
       miniCellSize *= scale;
@@ -665,7 +707,7 @@ export class GameRenderer {
     const startX = slot.x + (slot.width - totalW) / 2;
     const startY = slot.y + (slot.height - totalH) / 2;
 
-    const alpha = canPlace ? 1 : 0.35;
+    const alpha = canPlace ? 1 : 0.38;
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {

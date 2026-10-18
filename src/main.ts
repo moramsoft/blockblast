@@ -153,11 +153,15 @@ let touchVerticalOffset = 0;
 
 function handleResize() {
   const rect = canvas.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2.5);
   renderer.resize(rect.width, rect.height, dpr);
 }
 
 window.addEventListener('resize', handleResize);
+if (typeof ResizeObserver !== 'undefined') {
+  new ResizeObserver(handleResize).observe(canvas);
+}
 handleResize();
 
 function updateSoundIcon() {
@@ -394,29 +398,29 @@ dailyFinishBtn.addEventListener('click', () => {
 
 function renderDailyModal() {
   const challenge = game.getTodayDailyChallenge();
-  dailyStreakBadge.textContent = `🔥 ${game.dailyStreak.currentStreak} Day Streak`;
+  dailyStreakBadge.textContent = `🔥 ${game.dailyStreak.currentStreak}일 연속 달성`;
 
   if (challenge.targetType === 'gems') {
-    dailyMissionTitle.textContent = `Collect ${challenge.targetValue} Gems 💎`;
+    dailyMissionTitle.textContent = `보석 ${challenge.targetValue}개 모으기 💎`;
   } else if (challenge.targetType === 'lines') {
-    dailyMissionTitle.textContent = `Clear ${challenge.targetValue} Lines 🧹`;
+    dailyMissionTitle.textContent = `${challenge.targetValue}줄 완성하기 🧹`;
   } else {
-    dailyMissionTitle.textContent = `Reach ${challenge.targetValue.toLocaleString()} Points 🎯`;
+    dailyMissionTitle.textContent = `${challenge.targetValue.toLocaleString()}점 달성하기 🎯`;
   }
 
   dailyRewardText.textContent = challenge.completed
-    ? '✅ Completed for Today! (+100 🪙 Claimed)'
-    : `Reward: +${challenge.rewardCoins} 🪙 & Golden Star`;
+    ? '✅ 오늘의 퍼즐 달성 완료! (+100 🪙 획득)'
+    : `보상: +${challenge.rewardCoins} 🪙 & 황금 별 스탬프`;
 
   startDailyBtn.textContent = challenge.completed
-    ? '🔄 Replay Today’s Challenge'
-    : '▶ Play Today’s Challenge';
+    ? '🔄 오늘의 퍼즐 다시 하기'
+    : '▶ 오늘의 퍼즐 시작하기';
 
   // Render Full Month Calendar Grid
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
-  const monthName = now.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+  const monthName = `${year}년 ${month + 1}월`;
   calendarMonthHeader.textContent = monthName;
 
   calendarDaysGrid.innerHTML = '';
@@ -500,13 +504,13 @@ buyMegaPackBtn.addEventListener('click', () => {
 
 claimAdCoinsBtn.addEventListener('click', () => {
   claimAdCoinsBtn.disabled = true;
-  claimAdCoinsBtn.textContent = 'Watching Ad...';
+  claimAdCoinsBtn.textContent = '영상 시청 중...';
   setTimeout(() => {
     game.addCoins(50);
     sound.playAchievement();
     haptics.lineClear();
     claimAdCoinsBtn.disabled = false;
-    claimAdCoinsBtn.textContent = '+50 🪙 Free';
+    claimAdCoinsBtn.textContent = '+50 🪙 무료';
     updateShopButtons();
     syncUI();
   }, 1200);
@@ -517,13 +521,13 @@ function openStuckModal() {
   // Update button subtitles
   rescueHammerSub.textContent =
     game.boosters.hammer > 0
-      ? `Use 1 3x3 Hammer (${game.boosters.hammer} left)`
-      : `Buy & Smash (${BOOSTER_PRICES.hammer} 🪙)`;
+      ? `보유 망치 1개 사용 (${game.boosters.hammer}개 보유)`
+      : `즉시 구매 및 폭파 (${BOOSTER_PRICES.hammer} 🪙)`;
 
   rescueShuffleSub.textContent =
     game.boosters.shuffle > 0
-      ? `Use 1 Shuffle (${game.boosters.shuffle} left)`
-      : `Buy & Shuffle (${BOOSTER_PRICES.shuffle} 🪙)`;
+      ? `보유 새 블록 1개 사용 (${game.boosters.shuffle}개 보유)`
+      : `즉시 구매 및 교체 (${BOOSTER_PRICES.shuffle} 🪙)`;
 
   const canRotateHelp = game.canRotateRescueHelp();
   if (canRotateHelp) {
@@ -531,12 +535,12 @@ function openStuckModal() {
     rescueRotateBtn.style.opacity = '1';
     rescueRotateSub.textContent =
       game.boosters.rotate > 0
-        ? `Use 1 Rotate (${game.boosters.rotate} left)`
-        : `Buy & Rotate (${BOOSTER_PRICES.rotate} 🪙)`;
+        ? `보유 회전 1개 사용 (${game.boosters.rotate}개 보유)`
+        : `즉시 구매 및 회전 (${BOOSTER_PRICES.rotate} 🪙)`;
   } else {
     rescueRotateBtn.disabled = true;
     rescueRotateBtn.style.opacity = '0.4';
-    rescueRotateSub.textContent = 'No valid rotation fits';
+    rescueRotateSub.textContent = '회전해도 들어갈 자리가 없어요';
   }
 
   if (game.freeAdRescueUsed) {
@@ -576,7 +580,7 @@ rescueRotateBtn.addEventListener('click', () => {
 
 rescueAdBtn.addEventListener('click', () => {
   rescueAdBtn.disabled = true;
-  rescueAdBtn.textContent = 'Watching Sponsor Ad...';
+  rescueAdBtn.textContent = '응급 블록 준비 중...';
   setTimeout(() => {
     stuckModal.close();
     game.claimFreeEmergencyRescue();
@@ -625,7 +629,7 @@ function renderStatsModal() {
           <div class="ach-progress-bar-fill" style="width: ${pct}%"></div>
         </div>
       </div>
-      <div class="ach-status">${ach.unlocked ? '✅ Done' : pct + '%'}</div>
+      <div class="ach-status">${ach.unlocked ? '✅ 완료' : pct + '%'}</div>
     `;
     achievementsList.appendChild(row);
   });
@@ -638,7 +642,7 @@ window.addEventListener('keydown', (e) => {
     updateSoundIcon();
   } else if (e.key === 'r' || e.key === 'R') {
     if (!game.isGameOver) {
-      if (confirm('Start a new game?')) {
+      if (confirm('새 게임을 시작할까요?')) {
         game.startNewGame(game.mode);
         displayedScore = 0;
         syncUI();
@@ -670,16 +674,16 @@ function syncUI() {
     const challenge = game.dailyInfo;
     let goalProgress = '';
     if (challenge.targetType === 'gems') {
-      goalProgress = `Gems: ${challenge.gemsCollected || 0}/${challenge.targetValue} 💎`;
+      goalProgress = `보석 ${challenge.gemsCollected || 0}/${challenge.targetValue} 💎`;
     } else if (challenge.targetType === 'lines') {
-      goalProgress = `Lines: ${game.linesClearedTotal}/${challenge.targetValue}`;
+      goalProgress = `줄 완성 ${game.linesClearedTotal}/${challenge.targetValue}`;
     } else {
-      goalProgress = `Score: ${game.score.toLocaleString()}/${challenge.targetValue.toLocaleString()}`;
+      goalProgress = `점수 ${game.score.toLocaleString()}/${challenge.targetValue.toLocaleString()}`;
     }
 
     dailyBannerText.textContent = game.dailyGoalMet
-      ? `⭐ TODAY'S CHALLENGE COMPLETED! (+100 🪙)`
-      : `📅 DAILY MISSION: ${goalProgress} (Pure Skill)`;
+      ? `⭐ 오늘의 퍼즐 목표 달성! (+100 🪙)`
+      : `📅 오늘의 목표: ${goalProgress}`;
   } else if (game.mode === 'relaxed') {
     modeTag.textContent = 'RELAXED';
     modeTag.classList.remove('hidden');
@@ -696,20 +700,20 @@ function syncUI() {
   undoBtn.style.opacity = undoStatus.allowed ? '1' : '0.45';
   if (undoStatus.isFree) {
     undoTrialBadge.className = 'assist-badge';
-    undoTrialBadge.textContent = game.mode === 'relaxed' ? 'Free' : `${game.undoFreeTrialRemaining} Free`;
+    undoTrialBadge.textContent = game.mode === 'relaxed' ? '무료' : `${game.undoFreeTrialRemaining}회`;
   } else {
     undoTrialBadge.className = 'assist-badge coin-badge';
-    undoTrialBadge.textContent = `${undoStatus.cost} 🪙`;
+    undoTrialBadge.textContent = `${undoStatus.cost}🪙`;
   }
 
   const hintStatus = game.canGetHint();
   hintBtn.style.opacity = hintStatus.allowed ? '1' : '0.45';
   if (hintStatus.isFree) {
     hintTrialBadge.className = 'assist-badge';
-    hintTrialBadge.textContent = game.mode === 'relaxed' ? 'Free' : `${game.hintFreeTrialRemaining} Free`;
+    hintTrialBadge.textContent = game.mode === 'relaxed' ? '무료' : `${game.hintFreeTrialRemaining}회`;
   } else {
     hintTrialBadge.className = 'assist-badge coin-badge';
-    hintTrialBadge.textContent = `${hintStatus.cost} 🪙`;
+    hintTrialBadge.textContent = `${hintStatus.cost}🪙`;
   }
   assistBar.classList.toggle('disabled', game.isGameOver);
 
@@ -729,10 +733,10 @@ function syncUI() {
   // Mode Banner
   if (game.activeMode === 'hammer') {
     modeBanner.classList.remove('hidden');
-    modeBannerText.textContent = '🔨 Tap a block on board to blast 3x3! (Tap 3x3 Blast to cancel)';
+    modeBannerText.textContent = '🔨 부술 자리를 판에서 눌러주세요! (다시 누르면 취소)';
   } else if (game.activeMode === 'rotate') {
     modeBanner.classList.remove('hidden');
-    modeBannerText.textContent = '🔄 Tap a dock piece below to rotate 90°! (Tap Rotate to cancel)';
+    modeBannerText.textContent = '🔄 회전할 아래 블록을 눌러주세요! (다시 누르면 취소)';
   } else {
     modeBanner.classList.add('hidden');
   }
@@ -740,7 +744,7 @@ function syncUI() {
   // Combo Banner with 3-Move Heartbeat Indicator
   if (game.combo >= 1) {
     comboBanner.classList.remove('hidden');
-    comboText.textContent = `COMBO x${game.combo}`;
+    comboText.textContent = `콤보 x${game.combo}`;
     comboHearts.textContent = '🔥'.repeat(game.comboGraceMoves) + '⚪'.repeat(Math.max(0, 3 - game.comboGraceMoves));
 
     if (game.comboGraceMoves === 1) {
@@ -810,61 +814,77 @@ function renderShareCard() {
   const w = shareCardCanvas.width;
   const h = shareCardCanvas.height;
 
-  // Background gradient
-  const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, '#0f172a');
-  grad.addColorStop(0.5, '#1e1b4b');
-  grad.addColorStop(1, '#090d16');
+  // Bright Sunrise Garden Background Gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, '#8ec5ff');
+  grad.addColorStop(0.45, '#e9d5ff');
+  grad.addColorStop(1, '#bbf7d0');
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 
-  // Border frame
-  ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+  // Outer Cream Card Frame
+  ctx.fillStyle = '#fffdf9';
+  ctx.beginPath();
+  ctx.roundRect(22, 22, w - 44, h - 44, 28);
+  ctx.fill();
+  ctx.strokeStyle = '#4c1d95';
   ctx.lineWidth = 6;
-  ctx.strokeRect(10, 10, w - 20, h - 20);
+  ctx.stroke();
 
   // Header Title
   ctx.textAlign = 'center';
-  ctx.font = '900 28px -apple-system, sans-serif';
-  ctx.fillStyle = '#f8fafc';
-  ctx.fillText('BLOCK BLAST STAR', w / 2, 70);
+  ctx.font = '400 40px "Jua", -apple-system, sans-serif';
+  ctx.strokeStyle = '#7c2d12';
+  ctx.lineWidth = 6;
+  ctx.strokeText('🌸 브레인 블룸 🌸', w / 2, 82);
+  ctx.fillStyle = '#f59e0b';
+  ctx.fillText('🌸 브레인 블룸 🌸', w / 2, 82);
 
-  ctx.font = '700 14px -apple-system, sans-serif';
-  ctx.fillStyle = '#38bdf8';
-  ctx.fillText('🏆 BRAIN PUZZLE IQ REPORT', w / 2, 100);
+  ctx.font = '400 18px "Jua", -apple-system, sans-serif';
+  ctx.fillStyle = '#e11d74';
+  ctx.fillText('매일 피어나는 두뇌 퍼즐 기록표', w / 2, 114);
 
-  // Score Box
-  ctx.fillStyle = 'rgba(30, 41, 59, 0.7)';
+  // Score Box (Royal Purple Velvet Well with Gold Frame)
+  ctx.fillStyle = '#2e1a54';
   ctx.beginPath();
-  ctx.roundRect(40, 130, w - 80, 140, 16);
+  ctx.roundRect(50, 136, w - 100, 146, 22);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(250, 204, 21, 0.4)';
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 4;
   ctx.stroke();
 
-  ctx.font = '800 13px -apple-system, sans-serif';
-  ctx.fillStyle = '#94a3b8';
-  ctx.fillText('FINAL SCORE', w / 2, 165);
+  ctx.font = '400 17px "Jua", -apple-system, sans-serif';
+  ctx.fillStyle = '#fde68a';
+  ctx.fillText('이번 판 최종 점수', w / 2, 174);
 
-  ctx.font = '900 52px -apple-system, sans-serif';
-  ctx.fillStyle = '#ffd600';
-  ctx.fillText(game.score.toLocaleString(), w / 2, 225);
+  ctx.font = '400 58px "Jua", -apple-system, sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(game.score.toLocaleString(), w / 2, 240);
 
   // Stats Grid
-  const rank = game.score > 2500 ? 'Top 1% Grandmaster' : game.score > 1000 ? 'Top 5% Master' : 'Puzzle Expert';
-  ctx.font = '800 18px -apple-system, sans-serif';
-  ctx.fillStyle = '#a855f7';
-  ctx.fillText(`Rank: ${rank}`, w / 2, 310);
+  const rank =
+    game.score > 2500
+      ? '👑 상위 1% 두뇌 정원 마스터'
+      : game.score > 1000
+        ? '🌟 상위 5% 두뇌 활력 달인'
+        : '🌱 활짝 피어나는 퍼즐 명인';
+  ctx.font = '400 22px "Jua", -apple-system, sans-serif';
+  ctx.fillStyle = '#4c1d95';
+  ctx.fillText(rank, w / 2, 326);
 
-  ctx.font = '600 15px -apple-system, sans-serif';
-  ctx.fillStyle = '#e2e8f0';
-  ctx.fillText(`Max Combo: ${game.maxCombo}x  •  Lines Cleared: ${game.linesClearedTotal}`, w / 2, 345);
+  ctx.font = '400 18px "Jua", -apple-system, sans-serif';
+  ctx.fillStyle = '#14532d';
+  ctx.fillText(`최대 콤보: ${game.maxCombo}회   •   완성한 줄: ${game.linesClearedTotal}줄`, w / 2, 366);
 
   // Date and Watermark
-  const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  ctx.font = '500 13px -apple-system, sans-serif';
-  ctx.fillStyle = '#64748b';
-  ctx.fillText(`Certified on ${today} • Play on Android & Web`, w / 2, 440);
+  const today = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  ctx.font = '400 15px "Jua", -apple-system, sans-serif';
+  ctx.fillStyle = '#6b21a8';
+  ctx.fillText(`${today} 달성 • 브레인 블룸 (Brain Bloom)`, w / 2, 438);
 }
 
 downloadShareCardBtn.addEventListener('click', () => {

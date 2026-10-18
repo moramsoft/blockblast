@@ -172,10 +172,11 @@ export class ParticleSystem {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // Text stroke for arcade outline
-      ctx.font = '900 32px "Pretendard", "Segoe UI", system-ui, sans-serif';
-      ctx.lineWidth = 6;
-      ctx.strokeStyle = '#0f172a';
+      // Text stroke for casual game 3D outline
+      ctx.font = '400 34px "Jua", "Apple SD Gothic Neo", system-ui, sans-serif';
+      ctx.lineWidth = 7;
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = '#3b0764';
       ctx.strokeText(ft.text, 0, 0);
 
       // Main gradient / color
@@ -183,13 +184,14 @@ export class ParticleSystem {
       ctx.fillText(ft.text, 0, 0);
 
       if (ft.subText) {
-        ctx.font = '800 18px "Pretendard", "Segoe UI", system-ui, sans-serif';
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = '#0f172a';
-        ctx.strokeText(ft.subText, 0, 32);
+        ctx.font = '400 20px "Jua", "Apple SD Gothic Neo", system-ui, sans-serif';
+        ctx.lineWidth = 5;
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = '#3b0764';
+        ctx.strokeText(ft.subText, 0, 34);
 
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillText(ft.subText, 0, 32);
+        ctx.fillStyle = '#fffbeb';
+        ctx.fillText(ft.subText, 0, 34);
       }
 
       ctx.restore();
