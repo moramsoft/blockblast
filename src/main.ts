@@ -13,9 +13,28 @@ const restartBtn = document.getElementById('restartBtn') as HTMLButtonElement;
 const themeBtn = document.getElementById('themeBtn') as HTMLButtonElement;
 const themeTag = document.getElementById('themeTag') as HTMLSpanElement;
 const modeTag = document.getElementById('modeTag') as HTMLSpanElement;
+const homeBtn = document.getElementById('homeBtn') as HTMLButtonElement;
 const dailyBtn = document.getElementById('dailyBtn') as HTMLButtonElement;
 const shopBtn = document.getElementById('shopBtn') as HTMLButtonElement;
 const statsBtn = document.getElementById('statsBtn') as HTMLButtonElement;
+
+// Title Screen Elements
+const titleScreen = document.getElementById('titleScreen') as HTMLDivElement;
+const startRelaxedBtn = document.getElementById('startRelaxedBtn') as HTMLButtonElement;
+const startClassicBtn = document.getElementById('startClassicBtn') as HTMLButtonElement;
+const startDailyTitleBtn = document.getElementById('startDailyTitleBtn') as HTMLButtonElement;
+const resumeBtn = document.getElementById('resumeBtn') as HTMLButtonElement;
+const comfortModeCheckbox = document.getElementById('comfortModeCheckbox') as HTMLInputElement;
+
+// Assist & Tutorial Elements
+const assistBar = document.getElementById('assistBar') as HTMLDivElement;
+const undoBtn = document.getElementById('undoBtn') as HTMLButtonElement;
+const hintBtn = document.getElementById('hintBtn') as HTMLButtonElement;
+const undoTrialBadge = document.getElementById('undoTrialBadge') as HTMLSpanElement;
+const hintTrialBadge = document.getElementById('hintTrialBadge') as HTMLSpanElement;
+
+const tutorialBanner = document.getElementById('tutorialBanner') as HTMLDivElement;
+const dismissTutorialBtn = document.getElementById('dismissTutorialBtn') as HTMLButtonElement;
 
 const bestScoreText = document.getElementById('bestScoreText') as HTMLDivElement;
 const currentScoreText = document.getElementById('currentScoreText') as HTMLDivElement;
@@ -157,6 +176,103 @@ themeBtn.addEventListener('click', (e) => {
   document.body.className = `theme-${newTheme}`;
   themeTag.textContent = newTheme.toUpperCase();
   haptics.tick();
+});
+
+// Comfort Mode & Senior Settings Initialization
+comfortModeCheckbox.checked = game.comfortMode;
+document.getElementById('app')?.classList.toggle('comfort-mode', game.comfortMode);
+
+comfortModeCheckbox.addEventListener('change', () => {
+  game.comfortMode = comfortModeCheckbox.checked;
+  localStorage.setItem('blockblast_comfort_mode', String(game.comfortMode));
+  document.getElementById('app')?.classList.toggle('comfort-mode', game.comfortMode);
+  syncUI();
+  haptics.tick();
+});
+
+function checkTutorial() {
+  const tutorialDone = localStorage.getItem('blockblast_tutorial_done') === 'true';
+  if (!tutorialDone) {
+    tutorialBanner.classList.remove('hidden');
+  } else {
+    tutorialBanner.classList.add('hidden');
+  }
+}
+
+dismissTutorialBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  localStorage.setItem('blockblast_tutorial_done', 'true');
+  tutorialBanner.classList.add('hidden');
+  haptics.tick();
+});
+
+startRelaxedBtn.addEventListener('click', () => {
+  game.startNewGame('relaxed');
+  titleScreen.classList.add('hidden');
+  resumeBtn.classList.remove('hidden');
+  displayedScore = 0;
+  syncUI();
+  checkTutorial();
+  haptics.tick();
+});
+
+startClassicBtn.addEventListener('click', () => {
+  game.startNewGame('classic');
+  titleScreen.classList.add('hidden');
+  resumeBtn.classList.remove('hidden');
+  displayedScore = 0;
+  syncUI();
+  checkTutorial();
+  haptics.tick();
+});
+
+startDailyTitleBtn.addEventListener('click', () => {
+  titleScreen.classList.add('hidden');
+  resumeBtn.classList.remove('hidden');
+  renderDailyModal();
+  dailyModal.showModal();
+  haptics.tick();
+});
+
+resumeBtn.addEventListener('click', () => {
+  titleScreen.classList.add('hidden');
+  syncUI();
+  haptics.tick();
+});
+
+homeBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  titleScreen.classList.remove('hidden');
+  resumeBtn.classList.remove('hidden');
+  haptics.tick();
+});
+
+// Assist Toolbar Listeners (Undo & Hint)
+undoBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const status = game.canUndo();
+  if (!status.allowed) {
+    if (status.reason) {
+      game.particles.addFloatingText('⚠️ UNDO', status.reason, 240, 240, '#f87171');
+    }
+    return;
+  }
+  game.undoLastMove();
+  displayedScore = game.score;
+  syncUI();
+});
+
+hintBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const status = game.canGetHint();
+  if (!status.allowed) {
+    if (status.reason) {
+      game.particles.addFloatingText('⚠️ HINT', status.reason, 240, 240, '#f87171');
+    }
+    return;
+  }
+  game.requestHint();
+  syncUI();
 });
 
 // Restart Game
@@ -508,6 +624,7 @@ function syncUI() {
 
   // Mode Tag & Banner
   if (game.mode === 'daily') {
+    modeTag.textContent = 'DAILY';
     modeTag.classList.remove('hidden');
     dailyBanner.classList.remove('hidden');
     boosterBar.classList.add('disabled');
@@ -525,11 +642,42 @@ function syncUI() {
     dailyBannerText.textContent = game.dailyGoalMet
       ? `⭐ TODAY'S CHALLENGE COMPLETED! (+100 🪙)`
       : `📅 DAILY MISSION: ${goalProgress} (Pure Skill)`;
+  } else if (game.mode === 'relaxed') {
+    modeTag.textContent = 'RELAXED';
+    modeTag.classList.remove('hidden');
+    dailyBanner.classList.add('hidden');
+    boosterBar.classList.remove('disabled');
   } else {
     modeTag.classList.add('hidden');
     dailyBanner.classList.add('hidden');
     boosterBar.classList.remove('disabled');
   }
+
+  // Assist Toolbar (Undo & Hint Badges)
+  const undoStatus = game.canUndo();
+  undoBtn.style.opacity = undoStatus.allowed ? '1' : '0.45';
+  if (undoStatus.isFree) {
+    undoTrialBadge.className = 'assist-badge';
+    undoTrialBadge.textContent = game.mode === 'relaxed' ? 'Free' : `${game.undoFreeTrialRemaining} Free`;
+  } else {
+    undoTrialBadge.className = 'assist-badge coin-badge';
+    undoTrialBadge.textContent = `${undoStatus.cost} 🪙`;
+  }
+
+  const hintStatus = game.canGetHint();
+  hintBtn.style.opacity = hintStatus.allowed ? '1' : '0.45';
+  if (hintStatus.isFree) {
+    hintTrialBadge.className = 'assist-badge';
+    hintTrialBadge.textContent = game.mode === 'relaxed' ? 'Free' : `${game.hintFreeTrialRemaining} Free`;
+  } else {
+    hintTrialBadge.className = 'assist-badge coin-badge';
+    hintTrialBadge.textContent = `${hintStatus.cost} 🪙`;
+  }
+  assistBar.classList.toggle('disabled', game.isGameOver);
+
+  // Comfort Mode UI Sync
+  document.getElementById('app')?.classList.toggle('comfort-mode', game.comfortMode);
+  comfortModeCheckbox.checked = game.comfortMode;
 
   // Booster Badges
   rotateCountBadge.textContent = String(game.boosters.rotate);
@@ -933,6 +1081,9 @@ declare global {
       syncUI: () => void;
       openStuckModal: () => void;
       showGameOver: () => void;
+      titleScreen: HTMLElement;
+      openTitleScreen: () => void;
+      closeTitleScreen: () => void;
     };
   }
 }
@@ -943,4 +1094,7 @@ window.__BLOCK_BLAST_TEST__ = {
   syncUI,
   openStuckModal,
   showGameOver,
+  titleScreen,
+  openTitleScreen: () => titleScreen.classList.remove('hidden'),
+  closeTitleScreen: () => titleScreen.classList.add('hidden'),
 };

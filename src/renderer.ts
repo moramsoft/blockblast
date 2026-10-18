@@ -359,6 +359,36 @@ export class GameRenderer {
         }
       }
     }
+
+    // Active Move Hint Ghost Silhouette (For Senior / Beginner guidance)
+    if (game.activeHint && game.draggedIndex === null && !game.isGameOver && !game.isStuck) {
+      const piece = game.dock[game.activeHint.dockIndex];
+      if (piece) {
+        const matrix = piece.shape.matrix;
+        const mRows = matrix.length;
+        const mCols = matrix[0].length;
+        const { gridX, gridY } = game.activeHint;
+        const pulse = 0.5 + Math.sin(this.animTime * 6) * 0.4;
+
+        for (let pr = 0; pr < mRows; pr++) {
+          for (let pc = 0; pc < mCols; pc++) {
+            if (matrix[pr][pc] === 1) {
+              const { x, y } = this.getCellCoord(gridX + pc, gridY + pr);
+              ctx.save();
+              ctx.fillStyle = `rgba(255, 214, 0, ${0.22 + pulse * 0.15})`;
+              ctx.beginPath();
+              ctx.roundRect(x, y, cellSize, cellSize, cornerRadius);
+              ctx.fill();
+
+              ctx.strokeStyle = `rgba(255, 214, 0, ${0.75 + pulse * 0.25})`;
+              ctx.lineWidth = 2.5;
+              ctx.stroke();
+              ctx.restore();
+            }
+          }
+        }
+      }
+    }
   }
 
   private drawLineClearingGlow(game: BlockBlastGame) {
@@ -561,8 +591,19 @@ export class GameRenderer {
       ctx.roundRect(slot.x, slot.y, slot.width, slot.height, 14);
       ctx.fill();
 
-      // Rotate Mode Active Pulse on available slots
-      if (game.activeMode === 'rotate' && piece) {
+      // Active Hint Pulse on recommended dock piece
+      if (game.activeHint && game.activeHint.dockIndex === i && game.draggedIndex === null && piece) {
+        const pulse = 0.5 + Math.sin(this.animTime * 8) * 0.4;
+        ctx.strokeStyle = `rgba(255, 214, 0, ${0.75 + pulse * 0.25})`;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.save();
+        ctx.font = 'bold 12px system-ui';
+        ctx.fillStyle = '#ffd600';
+        ctx.fillText('✨ HINT', slot.x + slot.width / 2 - 22, slot.y + 18);
+        ctx.restore();
+      } else if (game.activeMode === 'rotate' && piece) {
         const pulse = 0.5 + Math.sin(this.animTime * 10) * 0.4;
         ctx.strokeStyle = `rgba(0, 229, 255, ${0.7 + pulse * 0.3})`;
         ctx.lineWidth = 2.5;

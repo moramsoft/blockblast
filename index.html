@@ -12,6 +12,54 @@
   </head>
   <body class="theme-neon">
     <div id="app">
+      <!-- App Title Screen & Mode Selection -->
+      <div id="titleScreen" class="title-screen">
+        <div class="title-content">
+          <div class="title-header">
+            <div class="title-badge">STAR EDITION</div>
+            <h1 class="title-logo">BLOCK BLAST</h1>
+            <p class="title-tagline">Relaxing Brain-Training Block Puzzle</p>
+          </div>
+
+          <div class="mode-cards-container">
+            <button id="startRelaxedBtn" class="mode-card mode-card-relaxed">
+              <div class="mode-card-icon">🌱</div>
+              <div class="mode-card-info">
+                <div class="mode-card-title">Relaxed Mode</div>
+                <div class="mode-card-desc">Stress-free • Guaranteed piece fits • Free hints. Specially tuned for seniors & peaceful play.</div>
+              </div>
+              <div class="mode-badge">COMFORT</div>
+            </button>
+
+            <button id="startClassicBtn" class="mode-card mode-card-classic">
+              <div class="mode-card-icon">🔥</div>
+              <div class="mode-card-info">
+                <div class="mode-card-title">Classic Mode</div>
+                <div class="mode-card-desc">Endless combos • High-score thrill • Boosters (Rotate, Shuffle, 3x3 Blast).</div>
+              </div>
+              <div class="mode-badge">POPULAR</div>
+            </button>
+
+            <button id="startDailyTitleBtn" class="mode-card mode-card-daily">
+              <div class="mode-card-icon">📅</div>
+              <div class="mode-card-info">
+                <div class="mode-card-title">Daily Challenge</div>
+                <div class="mode-card-desc">Seeded puzzle of the day • Earn calendar stamps & golden coins.</div>
+              </div>
+              <div class="mode-badge">DAILY</div>
+            </button>
+          </div>
+
+          <div class="title-footer-actions">
+            <button id="resumeBtn" class="primary-btn title-resume-btn hidden">▶ Resume Active Game</button>
+            <label class="comfort-checkbox-label">
+              <input type="checkbox" id="comfortModeCheckbox" />
+              <span>👓 Senior Comfort Mode (Larger buttons & gentle effects)</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
       <!-- Game Top Header -->
       <header class="game-header">
         <div class="top-bar">
@@ -21,6 +69,7 @@
             <span id="modeTag" class="mode-tag hidden">DAILY</span>
           </div>
           <div class="header-actions">
+            <button id="homeBtn" class="icon-btn" title="Home / Mode Select" aria-label="Title Screen">🏠</button>
             <button id="themeBtn" class="icon-btn" title="Change Theme (Neon / Wood / Candy)" aria-label="Change Theme">🎨</button>
             <button id="dailyBtn" class="icon-btn" title="Daily Challenge & Streaks" aria-label="Daily Challenge">📅</button>
             <button id="shopBtn" class="icon-btn" title="Booster Shop & Coins" aria-label="Booster Shop">🪙</button>
@@ -62,6 +111,31 @@
             <span class="booster-label">3x3 Blast</span>
             <span id="hammerCountBadge" class="booster-badge">2</span>
           </button>
+        </div>
+
+        <!-- Assist Toolbar (Senior & Non-gamer Assist: Undo & Hint) -->
+        <div id="assistBar" class="assist-bar">
+          <button id="undoBtn" class="assist-btn" title="Undo 1 move">
+            <span class="assist-icon">↩</span>
+            <span class="assist-label">Undo</span>
+            <span id="undoTrialBadge" class="assist-badge">5 Free</span>
+          </button>
+          <button id="hintBtn" class="assist-btn" title="Show optimal move hint">
+            <span class="assist-icon">💡</span>
+            <span class="assist-label">Hint</span>
+            <span id="hintTrialBadge" class="assist-badge">5 Free</span>
+          </button>
+        </div>
+
+        <!-- First-time Coach Mark Tutorial Banner -->
+        <div id="tutorialBanner" class="tutorial-banner hidden">
+          <div class="tutorial-card">
+            <span class="tutorial-icon">👆</span>
+            <div class="tutorial-info">
+              <strong>How to Play:</strong> Drag pieces from the bottom dock into the board! Fill full rows or columns to blast lines.
+            </div>
+            <button id="dismissTutorialBtn" class="tutorial-ok-btn">Got it! 👍</button>
+          </div>
         </div>
 
         <!-- Daily Mode Indicator Banner -->

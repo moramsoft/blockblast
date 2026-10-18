@@ -8,6 +8,8 @@ import {
   DailyStreakState,
   DockPiece,
   GameMode,
+  MoveHint,
+  MoveSnapshot,
   PlacedBounce,
   ShapeDefinition,
   ThemeId,
@@ -20,6 +22,7 @@ import {
   THEME_PALETTES,
   createMulberry32,
   hashStringToSeed,
+  getShapesForTheme,
 } from './shapes';
 import { sound } from './audio';
 import { haptics } from './haptics';
@@ -33,7 +36,13 @@ export const BOOSTER_PRICES = {
   shuffle: 50,
   hammer: 80,
   megaPack: 200,
+  undo: 20,
+  hint: 15,
 };
+
+export const UNDO_COIN_PRICE = 20;
+export const HINT_COIN_PRICE = 15;
+export const FREE_TRIAL_MOVES_COUNT = 5;
 
 export interface PlacementPreview {
   gridX: number;
@@ -95,11 +104,21 @@ export class BlockBlastGame {
   public achievements: Achievement[];
   public newlyUnlockedAchievements: Achievement[] = [];
 
+  // Senior & Accessibility Assist System (Free trial for first moves, then coin monetization)
+  public lastMoveSnapshot: MoveSnapshot | null = null;
+  public activeHint: MoveHint | null = null;
+  public idleSeconds: number = 0;
+  public comfortMode: boolean = false;
+  public movesCountThisGame: number = 0;
+  public undoFreeTrialRemaining: number = FREE_TRIAL_MOVES_COUNT;
+  public hintFreeTrialRemaining: number = FREE_TRIAL_MOVES_COUNT;
+
   constructor() {
     this.particles = new ParticleSystem();
     this.grid = this.createEmptyGrid();
     this.bestScore = parseInt(localStorage.getItem('blockblast_best_score') || '0', 10);
     this.theme = (localStorage.getItem('blockblast_theme') as ThemeId) || 'neon';
+    this.comfortMode = localStorage.getItem('blockblast_comfort_mode') === 'true';
     sound.setTheme(this.theme);
 
     // Load coins
@@ -207,6 +226,12 @@ export class BlockBlastGame {
     return true;
   }
 
+  public toggleComfortMode(): boolean {
+    this.comfortMode = !this.comfortMode;
+    localStorage.setItem('blockblast_comfort_mode', String(this.comfortMode));
+    return this.comfortMode;
+  }
+
   public startNewGame(mode: GameMode = 'classic') {
     this.mode = mode;
     this.grid = this.createEmptyGrid();
@@ -229,6 +254,17 @@ export class BlockBlastGame {
     this.dailyGoalMet = false;
     this.boosterUsageThisGame = { rotate: 0, shuffle: 0, hammer: 0 };
     this.particles.clear();
+
+    // Reset Senior & Assist state
+    this.lastMoveSnapshot = null;
+    this.activeHint = null;
+    this.idleSeconds = 0;
+    this.movesCountThisGame = 0;
+    this.undoFreeTrialRemaining = FREE_TRIAL_MOVES_COUNT;
+    this.hintFreeTrialRemaining = FREE_TRIAL_MOVES_COUNT;
+    if (mode === 'relaxed') {
+      this.comfortMode = true;
+    }
 
     if (mode === 'daily') {
       const todayKey = this.getTodayDateKey();
@@ -319,6 +355,72 @@ export class BlockBlastGame {
       scale: 1,
     }));
 
+    this.updateDockPlaceableStatus();
+
+    // In relaxed mode, if no pieces fit, automatically adjust with guaranteed placeable pieces
+    if (this.mode === 'relaxed' && !this.dock.some((p) => p && p.canPlace)) {
+      this.dealGuaranteedPlaceableShapes();
+    }
+  }
+
+  // 100% Guaranteed Placeable Shapes Dealing (For Emergency Ad Rescue, Shuffle, and Revive)
+  public dealGuaranteedPlaceableShapes() {
+    const allShapes = getShapesForTheme(this.theme);
+    let fittingShapes = allShapes.filter((s) => this.canFitAnywhere(s.matrix));
+
+    // If completely choked (no piece in catalog fits), clear center 2x2 pocket to guarantee fit
+    if (fittingShapes.length === 0) {
+      for (let r = 3; r <= 4; r++) {
+        for (let c = 3; c <= 4; c++) {
+          this.grid[r][c] = null;
+        }
+      }
+      fittingShapes = allShapes.filter((s) => this.canFitAnywhere(s.matrix));
+    }
+
+    // Identify shapes that can immediately trigger a line clear
+    const clearingShapes = fittingShapes.filter((s) => {
+      const rows = s.matrix.length;
+      const cols = s.matrix[0].length;
+      for (let r = 0; r <= BOARD_SIZE - rows; r++) {
+        for (let c = 0; c <= BOARD_SIZE - cols; c++) {
+          const prev = this.computePreview(s, c, r);
+          if (prev.isValid && prev.clearRows.length + prev.clearCols.length > 0) {
+            return true;
+          }
+        }
+      }
+      return false;
+    });
+
+    const selected: ShapeDefinition[] = [];
+    // Slot 0: Prioritize a line-clearing savior shape if available, else standard fitting
+    const firstPool = clearingShapes.length > 0 ? clearingShapes : fittingShapes;
+    const firstPick = firstPool[Math.floor(Math.random() * firstPool.length)];
+    selected.push({
+      ...firstPick,
+      matrix: firstPick.matrix.map((row) => [...row]),
+    });
+
+    // Slots 1 & 2: Fill with shapes that guaranteed fit
+    for (let i = 1; i < 3; i++) {
+      const pick = fittingShapes[Math.floor(Math.random() * fittingShapes.length)];
+      selected.push({
+        ...pick,
+        matrix: pick.matrix.map((row) => [...row]),
+      });
+    }
+
+    this.dock = selected.map((shape, i) => ({
+      id: `rescue_piece_${Date.now()}_${i}_${Math.random()}`,
+      shape,
+      canPlace: true,
+      scale: 1,
+    }));
+
+    this.isStuck = false;
+    this.activeHint = null;
+    this.idleSeconds = 0;
     this.updateDockPlaceableStatus();
   }
 
@@ -486,6 +588,30 @@ export class BlockBlastGame {
     const mRows = matrix.length;
     const mCols = matrix[0].length;
 
+    // Save snapshot for 1-Step Undo before modifying grid
+    this.lastMoveSnapshot = {
+      grid: this.grid.map((row) => row.map((cell) => (cell ? { ...cell } : null))),
+      dock: this.dock.map((p) =>
+        p
+          ? {
+              ...p,
+              shape: {
+                ...p.shape,
+                matrix: p.shape.matrix.map((row) => [...row]),
+              },
+            }
+          : null
+      ),
+      score: this.score,
+      combo: this.combo,
+      comboGraceMoves: this.comboGraceMoves,
+      linesClearedTotal: this.linesClearedTotal,
+      coins: this.coins,
+    };
+    this.movesCountThisGame++;
+    this.idleSeconds = 0;
+    this.activeHint = null;
+
     let tileCount = 0;
     const cellData: Cell = {
       color: piece.shape.color,
@@ -642,7 +768,7 @@ export class BlockBlastGame {
         this.stats.allClears = (this.stats.allClears || 0) + 1;
         sound.playAllClear();
         haptics.combo(6);
-        this.screenShake = 16;
+        this.screenShake = 16 * (this.comfortMode ? 0.35 : 1.0);
         this.particles.addShockwave(centroidX, centroidY, 260, '#ffd600');
         this.particles.addFloatingText('🌟 ALL CLEAR! 🌟', `+${allClearBonus} PTS & +${allClearCoins} 🪙`, centroidX, centroidY - 20, '#ffd600');
       } else {
@@ -655,7 +781,7 @@ export class BlockBlastGame {
           haptics.lineClear();
         }
 
-        this.screenShake = Math.min(3 + totalLines * 2.5 + (this.combo > 2 ? 3 : 0), 14);
+        this.screenShake = Math.min(3 + totalLines * 2.5 + (this.combo > 2 ? 3 : 0), 14) * (this.comfortMode ? 0.35 : 1.0);
 
         let shout = 'COOL!';
         if (totalLines === 2) shout = 'GREAT!';
@@ -747,7 +873,7 @@ export class BlockBlastGame {
     this.boosterUsageThisGame.shuffle++;
     this.saveBoosters();
 
-    this.dealNewShapes();
+    this.dealGuaranteedPlaceableShapes();
     sound.playShuffle();
     haptics.place();
     this.stats.boostersUsed++;
@@ -934,8 +1060,8 @@ export class BlockBlastGame {
       }
     }
 
-    // Refresh dock with fresh placeable shapes
-    this.dealNewShapes();
+    // Refresh dock with fresh placeable shapes guaranteed to fit
+    this.dealGuaranteedPlaceableShapes();
 
     sound.playRevive();
     haptics.lineClear();
@@ -1292,6 +1418,164 @@ export class BlockBlastGame {
     }
   }
 
+  // --- SENIOR & NON-GAMER ASSIST (UNDO & HINT) ---
+
+  public canUndo(): { allowed: boolean; isFree: boolean; cost: number; reason?: string } {
+    if (this.isGameOver) {
+      return { allowed: false, isFree: false, cost: UNDO_COIN_PRICE, reason: 'Game over' };
+    }
+    if (!this.lastMoveSnapshot) {
+      return { allowed: false, isFree: false, cost: UNDO_COIN_PRICE, reason: 'No move to undo' };
+    }
+
+    const isFree = this.mode === 'relaxed' || this.undoFreeTrialRemaining > 0;
+    if (isFree) {
+      return { allowed: true, isFree: true, cost: 0 };
+    }
+
+    if (this.coins >= UNDO_COIN_PRICE) {
+      return { allowed: true, isFree: false, cost: UNDO_COIN_PRICE };
+    }
+
+    return {
+      allowed: false,
+      isFree: false,
+      cost: UNDO_COIN_PRICE,
+      reason: `Need ${UNDO_COIN_PRICE} coins`,
+    };
+  }
+
+  public undoLastMove(): boolean {
+    const status = this.canUndo();
+    if (!status.allowed || !this.lastMoveSnapshot) {
+      sound.playInvalid();
+      return false;
+    }
+
+    if (!status.isFree) {
+      this.spendCoins(status.cost);
+    } else if (this.mode !== 'relaxed') {
+      this.undoFreeTrialRemaining = Math.max(0, this.undoFreeTrialRemaining - 1);
+    }
+
+    const snap = this.lastMoveSnapshot;
+    this.grid = snap.grid.map((row) => row.map((cell) => (cell ? { ...cell } : null)));
+    this.dock = snap.dock.map((p) =>
+      p
+        ? {
+            ...p,
+            shape: {
+              ...p.shape,
+              matrix: p.shape.matrix.map((row) => [...row]),
+            },
+          }
+        : null
+    );
+    this.score = snap.score;
+    this.combo = snap.combo;
+    this.comboGraceMoves = snap.comboGraceMoves;
+    this.linesClearedTotal = snap.linesClearedTotal;
+
+    this.lastMoveSnapshot = null;
+    this.activeHint = null;
+    this.idleSeconds = 0;
+    this.isStuck = false;
+    this.updateDockPlaceableStatus();
+
+    sound.playShuffle();
+    haptics.tick();
+    return true;
+  }
+
+  public canGetHint(): { allowed: boolean; isFree: boolean; cost: number; reason?: string } {
+    if (this.isGameOver) {
+      return { allowed: false, isFree: false, cost: HINT_COIN_PRICE, reason: 'Game over' };
+    }
+    const hasPlaceable = this.dock.some((p) => p && p.canPlace);
+    if (!hasPlaceable) {
+      return { allowed: false, isFree: false, cost: HINT_COIN_PRICE, reason: 'No placeable pieces' };
+    }
+
+    const isFree = this.mode === 'relaxed' || this.hintFreeTrialRemaining > 0;
+    if (isFree) {
+      return { allowed: true, isFree: true, cost: 0 };
+    }
+
+    if (this.coins >= HINT_COIN_PRICE) {
+      return { allowed: true, isFree: false, cost: HINT_COIN_PRICE };
+    }
+
+    return {
+      allowed: false,
+      isFree: false,
+      cost: HINT_COIN_PRICE,
+      reason: `Need ${HINT_COIN_PRICE} coins`,
+    };
+  }
+
+  public requestHint(): boolean {
+    const status = this.canGetHint();
+    if (!status.allowed) {
+      sound.playInvalid();
+      return false;
+    }
+
+    const hint = this.findBestMoveHint();
+    if (!hint) {
+      sound.playInvalid();
+      return false;
+    }
+
+    if (!status.isFree) {
+      this.spendCoins(status.cost);
+    } else if (this.mode !== 'relaxed') {
+      this.hintFreeTrialRemaining = Math.max(0, this.hintFreeTrialRemaining - 1);
+    }
+
+    this.activeHint = hint;
+    sound.playPick();
+    haptics.tick();
+    return true;
+  }
+
+  public findBestMoveHint(): MoveHint | null {
+    let bestHint: MoveHint | null = null;
+    let highestScore = -Infinity;
+
+    for (let dockIndex = 0; dockIndex < this.dock.length; dockIndex++) {
+      const piece = this.dock[dockIndex];
+      if (!piece || !piece.canPlace) continue;
+
+      const rows = piece.shape.matrix.length;
+      const cols = piece.shape.matrix[0].length;
+
+      for (let r = 0; r <= BOARD_SIZE - rows; r++) {
+        for (let c = 0; c <= BOARD_SIZE - cols; c++) {
+          const preview = this.computePreview(piece.shape, c, r);
+          if (!preview.isValid) continue;
+
+          const linesCleared = preview.clearRows.length + preview.clearCols.length;
+          let evalScore = linesCleared * 1000;
+          if (r === 0 || r + rows === BOARD_SIZE) evalScore += 15;
+          if (c === 0 || c + cols === BOARD_SIZE) evalScore += 15;
+          evalScore -= dockIndex * 2;
+
+          if (evalScore > highestScore) {
+            highestScore = evalScore;
+            bestHint = {
+              dockIndex,
+              gridX: c,
+              gridY: r,
+              clearsLines: linesCleared,
+            };
+          }
+        }
+      }
+    }
+
+    return bestHint;
+  }
+
   // --- GAME TICK & VISUAL CASCADE UPDATE ---
 
   public update(dt: number, getCellCoord?: (c: number, r: number) => { x: number; y: number; size: number }) {
@@ -1299,6 +1583,19 @@ export class BlockBlastGame {
 
     if (this.screenShake > 0) {
       this.screenShake = Math.max(0, this.screenShake - dt * 25);
+    }
+
+    // 7-second Auto-Hint for Seniors / Beginners
+    if (!this.isGameOver && !this.isStuck && !this.activeHint) {
+      this.idleSeconds += dt;
+      if (this.idleSeconds >= 7) {
+        if (this.mode === 'relaxed' || this.hintFreeTrialRemaining > 0) {
+          const hint = this.findBestMoveHint();
+          if (hint) {
+            this.activeHint = hint;
+          }
+        }
+      }
     }
 
     // Update Jelly Bounce animations

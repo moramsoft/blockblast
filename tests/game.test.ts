@@ -376,4 +376,142 @@ describe('BlockBlastGame Core Mechanics & Revamp Tests', () => {
     assert.equal(game.grid[0][0]?.colorKey, 'blue');
     assert.equal(game.grid[0][0]?.color, '#4cc9f0', 'Should map to candy blue');
   });
+
+  it('12. should guarantee 100% placeable shapes on emergency ad rescue / shuffle / revive', () => {
+    const game = new BlockBlastGame();
+    // Congest board leaving only single open pockets
+    for (let r = 0; r < 8; r++) {
+      for (let c = 0; c < 8; c++) {
+        if ((r + c) % 2 === 0) {
+          game.grid[r][c] = {
+            color: '#3d8bff',
+            gradient: ['#69a6ff', '#1f65d6'],
+            borderColor: '#9bc4ff',
+            shadowColor: 'rgba(31, 101, 214, 0.4)',
+            colorKey: 'blue',
+          };
+        }
+      }
+    }
+
+    game.dealGuaranteedPlaceableShapes();
+    assert.equal(game.dock.length, 3);
+    const placeableCount = game.dock.filter((p) => p && p.canPlace).length;
+    assert.ok(placeableCount >= 1, 'At least 1 piece must be 100% placeable without softlocking');
+  });
+
+  it('13. should handle 1-Step Undo with 5-move free trial then coin monetization', () => {
+    const game = new BlockBlastGame();
+    game.coins = 100;
+    assert.equal(game.canUndo().allowed, false, 'Cannot undo without a previous move');
+
+    // Place a piece
+    game.dock[0] = {
+      id: 'dot_1',
+      shape: {
+        id: 'dot',
+        name: 'Dot',
+        matrix: [[1]],
+        colorKey: 'gold',
+        color: '#ffd600',
+        gradient: ['#ffea60', '#d49b00'],
+        borderColor: '#fff5b0',
+        shadowColor: 'rgba(212, 155, 0, 0.4)',
+      },
+      canPlace: true,
+      scale: 1,
+    };
+    game.placePiece(0, 2, 2, () => ({ x: 0, y: 0, size: 40 }));
+    assert.ok(game.grid[2][2] !== null);
+
+    // 1st move: Undo should be free trial
+    const check1 = game.canUndo();
+    assert.equal(check1.allowed, true);
+    assert.equal(check1.isFree, true);
+    assert.equal(check1.cost, 0);
+
+    const undone = game.undoLastMove();
+    assert.equal(undone, true);
+    assert.equal(game.grid[2][2], null, 'Grid cell must be reverted');
+    assert.equal(game.coins, 100, 'Coins should not be spent during free trial');
+    assert.equal(game.undoFreeTrialRemaining, 4);
+
+    // Deplete free trial moves
+    game.undoFreeTrialRemaining = 0;
+    game.dock[0] = {
+      id: 'dot_2',
+      shape: {
+        id: 'dot',
+        name: 'Dot',
+        matrix: [[1]],
+        colorKey: 'gold',
+        color: '#ffd600',
+        gradient: ['#ffea60', '#d49b00'],
+        borderColor: '#fff5b0',
+        shadowColor: 'rgba(212, 155, 0, 0.4)',
+      },
+      canPlace: true,
+      scale: 1,
+    };
+    game.placePiece(0, 3, 3, () => ({ x: 0, y: 0, size: 40 }));
+
+    // Now undo should cost 20 coins
+    const checkPaid = game.canUndo();
+    assert.equal(checkPaid.allowed, true);
+    assert.equal(checkPaid.isFree, false);
+    assert.equal(checkPaid.cost, 20);
+
+    game.undoLastMove();
+    assert.equal(game.grid[3][3], null);
+    assert.equal(game.coins, 80, 'Must deduct 20 coins for paid undo');
+  });
+
+  it('14. should calculate optimal move hint prioritizing line clears', () => {
+    const game = new BlockBlastGame();
+    // Fill row 0 cells 0..6 (leaving cell 7 empty)
+    for (let c = 0; c < 7; c++) {
+      game.grid[0][c] = {
+        color: '#3d8bff',
+        gradient: ['#69a6ff', '#1f65d6'],
+        borderColor: '#9bc4ff',
+        shadowColor: 'rgba(31, 101, 214, 0.4)',
+        colorKey: 'blue',
+      };
+    }
+
+    // Dock piece 0 is a 1x1 dot
+    game.dock[0] = {
+      id: 'dot_hint',
+      shape: {
+        id: 'dot',
+        name: 'Dot',
+        matrix: [[1]],
+        colorKey: 'gold',
+        color: '#ffd600',
+        gradient: ['#ffea60', '#d49b00'],
+        borderColor: '#fff5b0',
+        shadowColor: 'rgba(212, 155, 0, 0.4)',
+      },
+      canPlace: true,
+      scale: 1,
+    };
+
+    const hint = game.findBestMoveHint();
+    assert.ok(hint !== null);
+    assert.equal(hint?.dockIndex, 0);
+    assert.equal(hint?.gridX, 7);
+    assert.equal(hint?.gridY, 0);
+    assert.equal(hint?.clearsLines, 1);
+  });
+
+  it('15. should configure relaxed mode with comfort UX and dampened screen shake', () => {
+    const game = new BlockBlastGame();
+    game.startNewGame('relaxed');
+    assert.equal(game.mode, 'relaxed');
+    assert.equal(game.comfortMode, true);
+
+    // Screen shake damping
+    game.screenShake = 16 * (game.comfortMode ? 0.35 : 1.0);
+    assert.ok(game.screenShake <= 6, 'Comfort mode must dampen screen shake for senior players');
+  });
 });

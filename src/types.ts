@@ -4,7 +4,7 @@ export type BoosterType = 'rotate' | 'shuffle' | 'hammer';
 
 export type ActiveInteractionMode = 'none' | 'hammer' | 'rotate';
 
-export type GameMode = 'classic' | 'daily';
+export type GameMode = 'classic' | 'daily' | 'relaxed';
 
 export type PaletteKey =
   | 'blue'
@@ -138,4 +138,21 @@ export interface DailyStreakState {
   bestStreak: number;
   lastCompletedDate: string;
   completedDates: string[]; // Set of YYYY-MM-DD strings
+}
+
+export interface MoveSnapshot {
+  grid: (Cell | null)[][];
+  dock: (DockPiece | null)[];
+  score: number;
+  combo: number;
+  comboGraceMoves: number;
+  linesClearedTotal: number;
+  coins: number;
+}
+
+export interface MoveHint {
+  dockIndex: number;
+  gridX: number;
+  gridY: number;
+  clearsLines: number;
 }

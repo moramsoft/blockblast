@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "test:unit": "./node_modules/.bin/esbuild tests/game.test.ts --bundle --platform=node --format=esm --banner:js=\"const store=new Map();globalThis.localStorage={getItem:k=>store.get(k)??null,setItem:(k,v)=>store.set(k,String(v)),removeItem:k=>store.delete(k),clear:()=>store.clear()};\" --outfile=tests/dist/game.test.mjs && node --test tests/dist/game.test.mjs",
-    "test:e2e:web": "npx playwright test",
+    "test:e2e:web": "npm run build && npx playwright test",
     "test:e2e:android": "bash scripts/e2e-android.sh",
     "test:e2e:ios": "bash scripts/e2e-ios.sh",
     "test": "npm run test:unit && npm run test:e2e:web",

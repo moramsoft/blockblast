@@ -45,6 +45,7 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
     await page.evaluate(() => {
       localStorage.clear();
       const b = window.__BLOCK_BLAST_TEST__!;
+      b.closeTitleScreen?.();
       b.game.coins = 100;
       b.game.bestScore = 0;
       b.game.boosters = { rotate: 3, shuffle: 3, hammer: 2 };
@@ -468,5 +469,107 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
     await expect(page.locator('#soundBtn')).toHaveText('🔊');
     await page.locator('#soundBtn').click();
     await expect(page.locator('#soundBtn')).toHaveText('🔇');
+  });
+
+  test('E2E-15: Title Screen, Mode Selection, Return Home & Senior Comfort UX', async ({ page }) => {
+    // Open title screen
+    await page.evaluate(() => window.__BLOCK_BLAST_TEST__!.openTitleScreen());
+    await expect(page.locator('#titleScreen')).toBeVisible();
+
+    // Check mode cards
+    await expect(page.locator('#startRelaxedBtn')).toBeVisible();
+    await expect(page.locator('#startClassicBtn')).toBeVisible();
+    await expect(page.locator('#startDailyTitleBtn')).toBeVisible();
+
+    // Toggle Senior Comfort Mode checkbox
+    await page.locator('#comfortModeCheckbox').click();
+    await expect(page.locator('#app')).toHaveClass(/comfort-mode/);
+
+    // Select Relaxed Mode
+    await page.locator('#startRelaxedBtn').click();
+    await expect(page.locator('#titleScreen')).toHaveClass(/hidden/);
+    await expect(page.locator('#modeTag')).toHaveText('RELAXED');
+
+    // Return to Title Screen via Home button
+    await page.locator('#homeBtn').click();
+    await expect(page.locator('#titleScreen')).toBeVisible();
+    await expect(page.locator('#resumeBtn')).toBeVisible();
+
+    // Resume game
+    await page.locator('#resumeBtn').click();
+    await expect(page.locator('#titleScreen')).toHaveClass(/hidden/);
+  });
+
+  test('E2E-16: Senior & Non-Gamer Assist: 1-Step Undo & Optimal Move Hint', async ({ page }) => {
+    await page.evaluate(() => {
+      const g = window.__BLOCK_BLAST_TEST__!.game;
+      g.coins = 50;
+      g.undoFreeTrialRemaining = 5;
+      g.hintFreeTrialRemaining = 5;
+      g.grid = g.grid.map((r) => r.map(() => null));
+      g.dock[0] = {
+        id: 'dot_test',
+        shape: {
+          id: 'dot',
+          name: 'Dot',
+          matrix: [[1]],
+          colorKey: 'gold',
+          color: '#ffd600',
+          gradient: ['#ffea60', '#d49b00'],
+          borderColor: '#fff5b0',
+          shadowColor: 'rgba(212, 155, 0, 0.4)',
+        },
+        canPlace: true,
+        scale: 1,
+      };
+      window.__BLOCK_BLAST_TEST__!.syncUI();
+    });
+
+    // Request hint
+    await page.locator('#hintBtn').click();
+    const hintActive = await page.evaluate(() => window.__BLOCK_BLAST_TEST__!.game.activeHint !== null);
+    expect(hintActive).toBe(true);
+
+    // Place piece
+    await page.evaluate(() => {
+      window.__BLOCK_BLAST_TEST__!.game.placePiece(0, 0, 0, () => ({ x: 0, y: 0, size: 40 }));
+      window.__BLOCK_BLAST_TEST__!.syncUI();
+    });
+
+    const hasPiece = await page.evaluate(() => window.__BLOCK_BLAST_TEST__!.game.grid[0][0] !== null);
+    expect(hasPiece).toBe(true);
+
+    // Click Undo
+    await page.locator('#undoBtn').click();
+    const cellAfterUndo = await page.evaluate(() => window.__BLOCK_BLAST_TEST__!.game.grid[0][0]);
+    expect(cellAfterUndo).toBeNull();
+  });
+
+  test('E2E-17: Emergency Rescue & Shuffle 100% Guaranteed Placeable Verification', async ({ page }) => {
+    // Fill almost whole board
+    await page.evaluate(() => {
+      const g = window.__BLOCK_BLAST_TEST__!.game;
+      for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+          if (r !== 3 || c !== 3) {
+            g.grid[r][c] = {
+              color: '#3d8bff',
+              gradient: ['#69a6ff', '#1f65d6'],
+              borderColor: '#9bc4ff',
+              shadowColor: 'rgba(31, 101, 214, 0.4)',
+              colorKey: 'blue',
+            };
+          }
+        }
+      }
+      // Trigger emergency rescue
+      g.claimFreeEmergencyRescue();
+      window.__BLOCK_BLAST_TEST__!.syncUI();
+    });
+
+    const anyPlaceable = await page.evaluate(() =>
+      window.__BLOCK_BLAST_TEST__!.game.dock.some((p) => p && p.canPlace)
+    );
+    expect(anyPlaceable).toBe(true);
   });
 });

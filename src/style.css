@@ -901,3 +901,338 @@ dialog::backdrop {
   background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
   box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
 }
+
+/* Title Screen & Mode Selection */
+.title-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  background: radial-gradient(circle at 50% 20%, #1e1b4b 0%, #090d16 70%, #050811 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 20px;
+  overflow-y: auto;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.title-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.title-content {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+.title-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.title-badge {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 3px 12px;
+  border-radius: 12px;
+}
+
+.title-logo {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #60a5fa 0%, #a855f7 50%, #f43f5e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 30px rgba(168, 85, 247, 0.5);
+}
+
+.title-tagline {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.mode-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.mode-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(17, 24, 39, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+}
+
+.mode-card:active {
+  transform: scale(0.98);
+}
+
+.mode-card-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.mode-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.mode-card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.mode-card-desc {
+  font-size: 11px;
+  line-height: 1.35;
+  color: #94a3b8;
+}
+
+.mode-badge {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  padding: 2px 7px;
+  border-radius: 6px;
+}
+
+.mode-card-relaxed {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+.mode-card-relaxed .mode-card-title {
+  color: #4ade80;
+}
+.mode-card-relaxed .mode-badge {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.mode-card-classic {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+.mode-card-classic .mode-card-title {
+  color: #38bdf8;
+}
+.mode-card-classic .mode-badge {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+}
+
+.mode-card-daily {
+  border-color: rgba(245, 158, 11, 0.4);
+}
+.mode-card-daily .mode-card-title {
+  color: #fbbf24;
+}
+.mode-card-daily .mode-badge {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.title-footer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.title-resume-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  padding: 12px;
+  font-size: 15px;
+}
+
+.comfort-checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #cbd5e1;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.comfort-checkbox-label input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: #38bdf8;
+  cursor: pointer;
+}
+
+/* Assist Toolbar (Undo & Hint) */
+.assist-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.assist-btn {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 6px 12px;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.assist-btn:hover {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.assist-btn:active {
+  transform: scale(0.96);
+}
+
+.assist-icon {
+  font-size: 16px;
+}
+
+.assist-badge {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+.assist-badge.coin-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Tutorial Coach Mark Banner */
+.tutorial-banner {
+  padding: 0 4px;
+  animation: slideDownFade 0.3s ease-out;
+}
+
+.tutorial-card {
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border: 1.5px solid #38bdf8;
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(56, 189, 248, 0.25);
+}
+
+.tutorial-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  animation: bounce 1.5s infinite;
+}
+
+.tutorial-info {
+  flex: 1;
+  font-size: 11px;
+  line-height: 1.35;
+  color: #f8fafc;
+}
+
+.tutorial-ok-btn {
+  background: #38bdf8;
+  color: #090d16;
+  border: none;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes slideDownFade {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Senior Comfort Mode overrides (.comfort-mode on #app or body) */
+.comfort-mode .mode-card {
+  padding: 18px 18px;
+  min-height: 80px;
+}
+
+.comfort-mode .mode-card-title {
+  font-size: 18px;
+}
+
+.comfort-mode .mode-card-desc {
+  font-size: 13px;
+}
+
+.comfort-mode .booster-btn,
+.comfort-mode .assist-btn {
+  min-height: 48px;
+  font-size: 14px;
+}
+
+.comfort-mode .score-val {
+  font-size: 22px !important;
+}
+
+.comfort-mode .score-label {
+  font-size: 12px !important;
+}
+
+.comfort-mode .icon-btn {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+}
