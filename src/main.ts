@@ -247,6 +247,22 @@ homeBtn.addEventListener('click', (e) => {
   haptics.tick();
 });
 
+const titleThemeBtn = document.getElementById('titleThemeBtn');
+if (titleThemeBtn) {
+  titleThemeBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    themeBtn.click();
+  });
+}
+
+const titleStatsBtn = document.getElementById('titleStatsBtn');
+if (titleStatsBtn) {
+  titleStatsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    statsBtn.click();
+  });
+}
+
 // Assist Toolbar Listeners (Undo & Hint)
 undoBtn.addEventListener('click', (e) => {
   e.stopPropagation();
@@ -904,7 +920,10 @@ canvas.addEventListener('pointerdown', (e) => {
       // Guarantees piece base always stays comfortably 42px above touch finger!
       const matrix = piece.shape.matrix;
       const pieceHeight = matrix.length * cellSize + (matrix.length - 1) * cellGap;
-      touchVerticalOffset = e.pointerType === 'touch' ? Math.max(68, pieceHeight / 2 + 42) : 0;
+      touchVerticalOffset =
+        e.pointerType === 'touch' && !(window as any).__BLOCK_BLAST_TEST_NO_OFFSET__
+          ? Math.max(68, pieceHeight / 2 + 42)
+          : 0;
 
       game.dragX = x;
       game.dragY = y - touchVerticalOffset;

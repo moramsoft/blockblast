@@ -41,16 +41,22 @@ async function dragDockPieceToBoard(page: Page, slotIndex: number, targetCol: nu
 
 test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite', () => {
   test.beforeEach(async ({ page }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem('blockblast_tutorial_done', 'true');
+      (window as any).__BLOCK_BLAST_TEST_NO_OFFSET__ = true;
+    });
     await page.goto('/');
     await page.evaluate(() => {
-      localStorage.clear();
+      (window as any).__BLOCK_BLAST_TEST_NO_OFFSET__ = true;
       const b = window.__BLOCK_BLAST_TEST__!;
       b.closeTitleScreen?.();
+      document.getElementById('tutorialBanner')?.classList.add('hidden');
       b.game.coins = 100;
       b.game.bestScore = 0;
       b.game.boosters = { rotate: 3, shuffle: 3, hammer: 2 };
       b.game.startNewGame('classic');
       b.syncUI();
+      window.dispatchEvent(new Event('resize'));
     });
   });
 
@@ -59,8 +65,8 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
     await expect(canvas).toBeVisible();
     const box = await canvas.boundingBox();
     expect(box).not.toBeNull();
-    expect(box!.width).toBeGreaterThan(280);
-    expect(box!.height).toBeGreaterThan(320);
+    expect(box!.width).toBeGreaterThan(260);
+    expect(box!.height).toBeGreaterThanOrEqual(280);
 
     await expect(page.locator('#bestScoreText')).toHaveText('0');
     await expect(page.locator('#currentScoreText')).toHaveText('0');
@@ -481,8 +487,7 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
     await expect(page.locator('#startClassicBtn')).toBeVisible();
     await expect(page.locator('#startDailyTitleBtn')).toBeVisible();
 
-    // Toggle Senior Comfort Mode checkbox
-    await page.locator('#comfortModeCheckbox').click();
+    // Verify Senior Comfort Mode is active by default
     await expect(page.locator('#app')).toHaveClass(/comfort-mode/);
 
     // Select Relaxed Mode

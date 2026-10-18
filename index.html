@@ -11,51 +11,69 @@
     <link rel="stylesheet" href="./src/style.css" />
   </head>
   <body class="theme-neon">
-    <div id="app">
+    <div id="app" class="comfort-mode">
       <!-- App Title Screen & Mode Selection -->
       <div id="titleScreen" class="title-screen">
         <div class="title-content">
           <div class="title-header">
-            <div class="title-badge">STAR EDITION</div>
-            <h1 class="title-logo">BLOCK BLAST</h1>
-            <p class="title-tagline">Relaxing Brain-Training Block Puzzle</p>
+            <div class="title-badge">두뇌 활력 퍼즐</div>
+            <h1 class="title-logo">브레인 블룸</h1>
+            <p class="title-tagline">Brain Bloom: 매일 젊어지는 맑은 두뇌</p>
           </div>
 
           <div class="mode-cards-container">
             <button id="startRelaxedBtn" class="mode-card mode-card-relaxed">
-              <div class="mode-card-icon">🌱</div>
-              <div class="mode-card-info">
-                <div class="mode-card-title">Relaxed Mode</div>
-                <div class="mode-card-desc">Stress-free • Guaranteed piece fits • Free hints. Specially tuned for seniors & peaceful play.</div>
+              <div class="mode-card-icon">
+                <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="M9 12l2 2 4-4"/>
+                </svg>
               </div>
-              <div class="mode-badge">COMFORT</div>
+              <div class="mode-card-info">
+                <div class="mode-card-title">편안한 모드</div>
+                <div class="mode-card-desc">시간 제한 없음 • 무제한 힌트 • 편안한 힐링</div>
+              </div>
+              <div class="mode-badge">추천</div>
             </button>
 
             <button id="startClassicBtn" class="mode-card mode-card-classic">
-              <div class="mode-card-icon">🔥</div>
-              <div class="mode-card-info">
-                <div class="mode-card-title">Classic Mode</div>
-                <div class="mode-card-desc">Endless combos • High-score thrill • Boosters (Rotate, Shuffle, 3x3 Blast).</div>
+              <div class="mode-card-icon">
+                <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
               </div>
-              <div class="mode-badge">POPULAR</div>
+              <div class="mode-card-info">
+                <div class="mode-card-title">도전 클래식</div>
+                <div class="mode-card-desc">짜릿한 콤보 • 연속 폭파 • 최고 점수 도전</div>
+              </div>
+              <div class="mode-badge">인기</div>
             </button>
 
             <button id="startDailyTitleBtn" class="mode-card mode-card-daily">
-              <div class="mode-card-icon">📅</div>
-              <div class="mode-card-info">
-                <div class="mode-card-title">Daily Challenge</div>
-                <div class="mode-card-desc">Seeded puzzle of the day • Earn calendar stamps & golden coins.</div>
+              <div class="mode-card-icon">
+                <svg class="card-svg" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
               </div>
-              <div class="mode-badge">DAILY</div>
+              <div class="mode-card-info">
+                <div class="mode-card-title">오늘의 퍼즐</div>
+                <div class="mode-card-desc">매일 새로운 미션 • 두뇌 활력 별 도장 모으기</div>
+              </div>
+              <div class="mode-badge">매일</div>
             </button>
           </div>
 
           <div class="title-footer-actions">
-            <button id="resumeBtn" class="primary-btn title-resume-btn hidden">▶ Resume Active Game</button>
-            <label class="comfort-checkbox-label">
-              <input type="checkbox" id="comfortModeCheckbox" />
-              <span>👓 Senior Comfort Mode (Larger buttons & gentle effects)</span>
-            </label>
+            <button id="resumeBtn" class="primary-btn title-resume-btn hidden">▶ 게임 계속하기</button>
+            <div class="title-mini-actions">
+              <button id="titleThemeBtn" class="secondary-btn title-sub-btn">🎨 테마 변경</button>
+              <button id="titleStatsBtn" class="secondary-btn title-sub-btn">🏆 내 기록 / 업적</button>
+            </div>
+            <!-- Retained hidden checkbox for test bridge backward compatibility -->
+            <input type="checkbox" id="comfortModeCheckbox" checked class="hidden" />
           </div>
         </div>
       </div>
@@ -64,94 +82,154 @@
       <header class="game-header">
         <div class="top-bar">
           <div class="logo-group">
-            <h1 class="logo-title">BLOCK BLAST</h1>
+            <h1 class="logo-title">브레인 블룸</h1>
             <span id="themeTag" class="logo-tag">NEON</span>
-            <span id="modeTag" class="mode-tag hidden">DAILY</span>
+            <span id="modeTag" class="mode-tag hidden">RELAXED</span>
           </div>
           <div class="header-actions">
-            <button id="homeBtn" class="icon-btn" title="Home / Mode Select" aria-label="Title Screen">🏠</button>
-            <button id="themeBtn" class="icon-btn" title="Change Theme (Neon / Wood / Candy)" aria-label="Change Theme">🎨</button>
-            <button id="dailyBtn" class="icon-btn" title="Daily Challenge & Streaks" aria-label="Daily Challenge">📅</button>
-            <button id="shopBtn" class="icon-btn" title="Booster Shop & Coins" aria-label="Booster Shop">🪙</button>
-            <button id="statsBtn" class="icon-btn" title="Stats & Trophies" aria-label="Player Stats">🏆</button>
-            <button id="soundBtn" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
-            <button id="restartBtn" class="icon-btn" title="New Game" aria-label="Restart Game">🔄</button>
+            <button id="homeBtn" class="icon-btn" title="홈 메뉴 / 모드 선택" aria-label="Title Screen">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 10.5L12 3l9 7.5v9a2 2 0 0 1-2 2h-4a2 2 0 0 1-2-2v-4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+              </svg>
+            </button>
+            <button id="themeBtn" class="icon-btn" title="테마 변경" aria-label="Change Theme">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/>
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.92 0 1.5-.74 1.5-1.5 0-.42-.16-.8-.44-1.1-.28-.31-.44-.69-.44-1.12 0-.92.74-1.66 1.66-1.66H16c3.31 0 6-2.69 6-6 0-4.97-4.48-8.62-10-8.62z"/>
+              </svg>
+            </button>
+            <button id="dailyBtn" class="icon-btn" title="오늘의 퍼즐" aria-label="Daily Challenge">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </button>
+            <button id="shopBtn" class="icon-btn" title="코인 상점" aria-label="Booster Shop">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 5 0c0 2-5 2-5 4a2.5 2.5 0 0 0 5 0"/>
+              </svg>
+            </button>
+            <button id="statsBtn" class="icon-btn" title="내 기록 / 업적" aria-label="Player Stats">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2"/>
+                <path d="M18 9h2a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2h-2"/>
+                <path d="M4 22h16"/>
+                <path d="M10 14.66V17c0 .55-.45 1-1 1H7v4h10v-4h-2c-.55 0-1-.45-1-1v-2.34"/>
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/>
+              </svg>
+            </button>
+            <button id="soundBtn" class="icon-btn" title="소리 On/Off" aria-label="Toggle Sound">🔊</button>
+            <button id="restartBtn" class="icon-btn" title="새 게임 시작" aria-label="Restart Game">
+              <svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+            </button>
           </div>
         </div>
 
         <div class="scores-container">
           <div class="score-card score-best">
-            <div class="score-label">👑 BEST</div>
+            <div class="score-label">👑 최고 점수</div>
             <div id="bestScoreText" class="score-val">0</div>
           </div>
           <div class="score-card score-current">
-            <div class="score-label">🔥 SCORE</div>
+            <div class="score-label">🔥 내 점수</div>
             <div id="currentScoreText" class="score-val">0</div>
           </div>
           <div class="score-card score-coins" id="headerCoinCard">
-            <div class="score-label">🪙 COINS</div>
+            <div class="score-label">🪙 코인</div>
             <div id="headerCoinsText" class="score-val">100</div>
           </div>
         </div>
 
-        <!-- In-game Booster Toolbar -->
-        <div id="boosterBar" class="booster-bar">
-          <button id="rotateBoosterBtn" class="booster-btn" title="Rotate dock piece 90°">
-            <span class="booster-icon">🔄</span>
-            <span class="booster-label">Rotate</span>
-            <span id="rotateCountBadge" class="booster-badge">3</span>
+        <!-- Unified In-game Senior Action Toolbar -->
+        <div id="boosterBar" class="action-strip">
+          <button id="undoBtn" class="senior-action-btn" title="한 수 되돌리기">
+            <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 7v6h6"/>
+              <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+            </svg>
+            <span class="action-btn-text">되돌리기</span>
+            <span id="undoTrialBadge" class="action-badge">5회 무료</span>
           </button>
-          <button id="shuffleBoosterBtn" class="booster-btn" title="Shuffle dock pieces">
-            <span class="booster-icon">🔀</span>
-            <span class="booster-label">Shuffle</span>
-            <span id="shuffleCountBadge" class="booster-badge">3</span>
+
+          <button id="hintBtn" class="senior-action-btn" title="최적 수 힌트 보기">
+            <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="#facc15" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18h6"/>
+              <path d="M10 22h4"/>
+              <path d="M12 2a7 7 0 0 0-7 7c0 2.6 1.4 4.8 3.5 6h7c2.1-1.2 3.5-3.4 3.5-6a7 7 0 0 0-7-7z"/>
+            </svg>
+            <span class="action-btn-text">힌트</span>
+            <span id="hintTrialBadge" class="action-badge">5회 무료</span>
           </button>
-          <button id="hammerBoosterBtn" class="booster-btn" title="Smash 3x3 block area">
-            <span class="booster-icon">🔨</span>
-            <span class="booster-label">3x3 Blast</span>
-            <span id="hammerCountBadge" class="booster-badge">2</span>
+
+          <button id="shuffleBoosterBtn" class="senior-action-btn" title="새 블록으로 바꾸기">
+            <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 3h5v5"/>
+              <path d="M4 20L21 3"/>
+              <path d="M21 16v5h-5"/>
+              <path d="M15 15l6 6"/>
+              <path d="M4 4l5 5"/>
+            </svg>
+            <span class="action-btn-text">새 블록</span>
+            <span id="shuffleCountBadge" class="action-badge">3</span>
+          </button>
+
+          <button id="hammerBoosterBtn" class="senior-action-btn" title="3x3 영역 부수기">
+            <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14.5 4.5l5 5-2 2-5-5 2-2z"/>
+              <path d="M12.5 6.5L3 16l3 3 9.5-9.5"/>
+              <path d="M18 2l4 4"/>
+            </svg>
+            <span class="action-btn-text">3x3 폭파</span>
+            <span id="hammerCountBadge" class="action-badge">2</span>
+          </button>
+
+          <button id="rotateBoosterBtn" class="senior-action-btn" title="블록 90도 회전">
+            <svg class="action-svg" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6"/>
+              <path d="M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+            <span class="action-btn-text">회전</span>
+            <span id="rotateCountBadge" class="action-badge">3</span>
           </button>
         </div>
 
-        <!-- Assist Toolbar (Senior & Non-gamer Assist: Undo & Hint) -->
-        <div id="assistBar" class="assist-bar">
-          <button id="undoBtn" class="assist-btn" title="Undo 1 move">
-            <span class="assist-icon">↩</span>
-            <span class="assist-label">Undo</span>
-            <span id="undoTrialBadge" class="assist-badge">5 Free</span>
-          </button>
-          <button id="hintBtn" class="assist-btn" title="Show optimal move hint">
-            <span class="assist-icon">💡</span>
-            <span class="assist-label">Hint</span>
-            <span id="hintTrialBadge" class="assist-badge">5 Free</span>
-          </button>
-        </div>
+        <!-- Retained assistBar container for test bridge backward compatibility -->
+        <div id="assistBar" class="hidden"></div>
 
         <!-- First-time Coach Mark Tutorial Banner -->
         <div id="tutorialBanner" class="tutorial-banner hidden">
           <div class="tutorial-card">
             <span class="tutorial-icon">👆</span>
             <div class="tutorial-info">
-              <strong>How to Play:</strong> Drag pieces from the bottom dock into the board! Fill full rows or columns to blast lines.
+              <strong>시작하기:</strong> 아래 블록을 판으로 끌어다 놓으세요! 가로나 세로 한 줄을 다 채우면 시원하게 터집니다.
             </div>
-            <button id="dismissTutorialBtn" class="tutorial-ok-btn">Got it! 👍</button>
+            <button id="dismissTutorialBtn" class="tutorial-ok-btn">알겠어요! 👍</button>
           </div>
         </div>
 
         <!-- Daily Mode Indicator Banner -->
         <div id="dailyBanner" class="daily-banner hidden">
-          <span id="dailyBannerText">📅 DAILY CHALLENGE: Clear 12 Lines (Boosters Disabled)</span>
+          <span id="dailyBannerText">📅 오늘의 퍼즐: 12줄 완성하기</span>
         </div>
 
         <!-- Mode Notification Banner -->
         <div id="modeBanner" class="mode-banner hidden">
-          <span id="modeBannerText">🔨 Tap a block on the board to smash 3x3!</span>
+          <span id="modeBannerText">🔨 부술 자리를 판에서 눌러주세요!</span>
         </div>
 
         <!-- Combo Banner with Heartbeat 3-Move Grace Indicator -->
         <div id="comboBanner" class="combo-banner hidden">
           <span class="combo-lightning">⚡</span>
-          <span id="comboText">COMBO x2</span>
+          <span id="comboText">콤보 x2</span>
           <span id="comboHearts" class="combo-hearts">🔥🔥🔥</span>
         </div>
       </header>
@@ -165,46 +243,46 @@
       <dialog id="stuckModal">
         <div class="modal-header">
           <div class="trophy-icon">🚨</div>
-          <h2 class="modal-title">OUT OF MOVES!</h2>
-          <p class="modal-subtitle">Don't give up! Use a booster or free rescue to keep your score streak alive.</p>
+          <h2 class="modal-title">놓을 자리가 없어요!</h2>
+          <p class="modal-subtitle">도구를 사용해 막힌 판을 시원하게 뚫어보세요.</p>
         </div>
 
         <div class="rescue-options-grid">
+          <button id="rescueAdBtn" class="rescue-card-btn rescue-ad-highlight">
+            <span class="rescue-card-icon">📺</span>
+            <div class="rescue-card-info">
+              <div class="rescue-card-title">무료 응급 블록 교체</div>
+              <div class="rescue-card-sub">짧은 영상 보고 계속하기 (판당 1회)</div>
+            </div>
+          </button>
+
           <button id="rescueHammerBtn" class="rescue-card-btn">
             <span class="rescue-card-icon">🔨</span>
             <div class="rescue-card-info">
-              <div class="rescue-card-title">3x3 Blast Hammer</div>
-              <div id="rescueHammerSub" class="rescue-card-sub">Use 1 Hammer</div>
+              <div class="rescue-card-title">3x3 망치 폭파</div>
+              <div id="rescueHammerSub" class="rescue-card-sub">망치 1개 사용</div>
             </div>
           </button>
 
           <button id="rescueShuffleBtn" class="rescue-card-btn">
             <span class="rescue-card-icon">🔀</span>
             <div class="rescue-card-info">
-              <div class="rescue-card-title">Shuffle Dock</div>
-              <div id="rescueShuffleSub" class="rescue-card-sub">Use 1 Shuffle</div>
+              <div class="rescue-card-title">블록 전체 교체</div>
+              <div id="rescueShuffleSub" class="rescue-card-sub">셔플 1개 사용</div>
             </div>
           </button>
 
           <button id="rescueRotateBtn" class="rescue-card-btn">
             <span class="rescue-card-icon">🔄</span>
             <div class="rescue-card-info">
-              <div class="rescue-card-title">Rotate Piece</div>
-              <div id="rescueRotateSub" class="rescue-card-sub">Use 1 Rotate</div>
-            </div>
-          </button>
-
-          <button id="rescueAdBtn" class="rescue-card-btn rescue-ad-highlight">
-            <span class="rescue-card-icon">📺</span>
-            <div class="rescue-card-info">
-              <div class="rescue-card-title">Free Emergency Shuffle</div>
-              <div class="rescue-card-sub">Watch 3s Ad (1 per game)</div>
+              <div class="rescue-card-title">블록 회전</div>
+              <div id="rescueRotateSub" class="rescue-card-sub">회전 1개 사용</div>
             </div>
           </button>
         </div>
 
         <div class="modal-actions" style="margin-top: 14px;">
-          <button id="stuckGiveUpBtn" class="secondary-btn">Give Up (Game Over)</button>
+          <button id="stuckGiveUpBtn" class="secondary-btn">게임 종료 (점수 기록)</button>
         </div>
       </dialog>
 

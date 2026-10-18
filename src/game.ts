@@ -108,7 +108,7 @@ export class BlockBlastGame {
   public lastMoveSnapshot: MoveSnapshot | null = null;
   public activeHint: MoveHint | null = null;
   public idleSeconds: number = 0;
-  public comfortMode: boolean = false;
+  public comfortMode: boolean = true;
   public movesCountThisGame: number = 0;
   public undoFreeTrialRemaining: number = FREE_TRIAL_MOVES_COUNT;
   public hintFreeTrialRemaining: number = FREE_TRIAL_MOVES_COUNT;
@@ -118,7 +118,7 @@ export class BlockBlastGame {
     this.grid = this.createEmptyGrid();
     this.bestScore = parseInt(localStorage.getItem('blockblast_best_score') || '0', 10);
     this.theme = (localStorage.getItem('blockblast_theme') as ThemeId) || 'neon';
-    this.comfortMode = localStorage.getItem('blockblast_comfort_mode') === 'true';
+    this.comfortMode = localStorage.getItem('blockblast_comfort_mode') !== 'false';
     sound.setTheme(this.theme);
 
     // Load coins

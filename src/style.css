@@ -17,6 +17,10 @@
   -webkit-touch-callout: none;
 }
 
+.hidden {
+  display: none !important;
+}
+
 html,
 body {
   width: 100%;
@@ -918,6 +922,7 @@ dialog::backdrop {
 }
 
 .title-screen.hidden {
+  display: none !important;
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -1203,36 +1208,160 @@ dialog::backdrop {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Senior Comfort Mode overrides (.comfort-mode on #app or body) */
+/* Custom SVG Icon Styling */
+.ui-icon {
+  width: 22px;
+  height: 22px;
+  display: block;
+  stroke: currentColor;
+}
+
+.card-svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+.action-svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Unified Senior Action Strip */
+.action-strip {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.senior-action-btn {
+  flex: 1;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 8px 6px;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #f8fafc;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.senior-action-btn:hover {
+  background: rgba(51, 65, 85, 0.85);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.senior-action-btn:active {
+  transform: scale(0.96);
+}
+
+.senior-action-btn.active-mode {
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.15);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.4);
+}
+
+.action-btn-text {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #e2e8f0;
+}
+
+.action-badge {
+  font-size: 9px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 8px;
+  line-height: 1.2;
+}
+
+.action-badge.coin-badge {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.title-mini-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.title-sub-btn {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Senior Comfort Mode Default Overrides */
 .comfort-mode .mode-card {
-  padding: 18px 18px;
-  min-height: 80px;
+  padding: 18px 20px;
+  min-height: 84px;
 }
 
 .comfort-mode .mode-card-title {
-  font-size: 18px;
+  font-size: 19px;
+  font-weight: 900;
 }
 
 .comfort-mode .mode-card-desc {
   font-size: 13px;
+  font-weight: 600;
 }
 
-.comfort-mode .booster-btn,
-.comfort-mode .assist-btn {
-  min-height: 48px;
-  font-size: 14px;
+.comfort-mode .senior-action-btn {
+  min-height: 56px;
+  padding: 8px 6px;
+}
+
+.comfort-mode .action-btn-text {
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.comfort-mode .action-badge {
+  font-size: 10px;
+  font-weight: 900;
+  padding: 2px 7px;
 }
 
 .comfort-mode .score-val {
-  font-size: 22px !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
 }
 
 .comfort-mode .score-label {
   font-size: 12px !important;
+  font-weight: 800 !important;
 }
 
 .comfort-mode .icon-btn {
   width: 44px;
   height: 44px;
-  font-size: 20px;
+}
+
+.comfort-mode .tutorial-card {
+  padding: 12px 16px;
+}
+
+.comfort-mode .tutorial-info {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.comfort-mode .tutorial-ok-btn {
+  font-size: 13px;
+  padding: 7px 14px;
 }
