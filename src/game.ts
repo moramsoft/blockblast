@@ -341,6 +341,12 @@ export class BlockBlastGame {
         hasGem: item.gem,
       };
     }
+
+    // Always synchronize targetValue with the exact number of seeded gems on the board
+    const totalGemsOnBoard = patternCells.filter((item) => item.gem).length;
+    if (this.dailyInfo && this.dailyInfo.targetType === 'gems') {
+      this.dailyInfo.targetValue = totalGemsOnBoard;
+    }
   }
 
   // Weighted hand deal with diversity rules and smart difficulty pacing
@@ -1110,7 +1116,8 @@ export class BlockBlastGame {
 
     let targetValue = 10;
     if (targetType === 'gems') {
-      targetValue = 6 + Math.floor(prng() * 6); // 6-11 gems
+      // Symmetrical daily boards seed 4-6 gems. Target represents collecting all gems on the board.
+      targetValue = 6;
     } else if (targetType === 'lines') {
       targetValue = 12 + Math.floor(prng() * 8); // 12-19 lines
     } else {

@@ -1141,11 +1141,64 @@ function renderShareCard() {
   ctx.fillText(`${today} • Brain Bloom`, w / 2, 438);
 }
 
-downloadShareCardBtn.addEventListener('click', () => {
-  const link = document.createElement('a');
-  link.download = `block-blast-score-${game.score}.png`;
-  link.href = shareCardCanvas.toDataURL('image/png');
-  link.click();
+downloadShareCardBtn.addEventListener('click', async () => {
+  const shareTitle = 'Brain Bloom — Casual Block Puzzle';
+  const shareText = `🌸 I just scored ${game.score.toLocaleString()} points in Brain Bloom! (Max Combo: x${game.maxCombo}) 🧩✨\nCan you beat my high score?\n\n📲 Play Brain Bloom:\n• iOS: https://apps.apple.com/app/brain-bloom/id6740000000\n• Android: https://play.google.com/store/apps/details?id=com.blockblast.star`;
+
+  // 1. Native Web Share API (iOS/iPadOS, Android WebView, Mobile Browsers)
+  if (typeof navigator !== 'undefined' && typeof navigator.share === 'function') {
+    try {
+      if (shareCardCanvas && typeof shareCardCanvas.toBlob === 'function') {
+        const blob = await new Promise<Blob | null>((resolve) =>
+          shareCardCanvas.toBlob(resolve, 'image/png')
+        );
+
+        if (blob && typeof File !== 'undefined') {
+          const file = new File([blob], `brain-bloom-score-${game.score}.png`, {
+            type: 'image/png',
+          });
+
+          if (
+            typeof navigator.canShare === 'function' &&
+            navigator.canShare({ files: [file] })
+          ) {
+            await navigator.share({
+              title: shareTitle,
+              text: shareText,
+              files: [file],
+            });
+            return;
+          }
+        }
+      }
+
+      await navigator.share({
+        title: shareTitle,
+        text: shareText,
+        url: 'https://apps.apple.com/app/brain-bloom/id6740000000',
+      });
+      return;
+    } catch (err: unknown) {
+      if ((err as Error)?.name === 'AbortError') return;
+    }
+  }
+
+  // 2. Clipboard fallback (desktop/web)
+  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(shareText);
+      game.particles.addFloatingText('📋 COPIED', 'Score copied to clipboard!', 240, 240, '#22c55e');
+      return;
+    } catch {}
+  }
+
+  // 3. Fallback file download
+  try {
+    const link = document.createElement('a');
+    link.download = `brain-bloom-score-${game.score}.png`;
+    link.href = shareCardCanvas.toDataURL('image/png');
+    link.click();
+  } catch {}
 });
 
 // Pointer & Drag Interaction with Ergonomic Clearance & Magnetic Snap
