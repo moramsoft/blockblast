@@ -157,6 +157,13 @@ const renderer = new GameRenderer(canvas);
 // Rolling Score Display state
 let displayedScore = 0;
 
+function resetGameScore() {
+  displayedScore = 0;
+  if (currentScoreText) {
+    currentScoreText.textContent = '0';
+  }
+}
+
 // Stuck / No Moves Left Delay Timer
 let stuckModalTimer: number | null = null;
 
@@ -293,7 +300,7 @@ startRelaxedBtn.addEventListener('click', () => {
   game.startNewGame('relaxed');
   titleScreen.classList.add('hidden');
   resumeBtn.classList.remove('hidden');
-  displayedScore = 0;
+  resetGameScore();
   syncUI();
   checkTutorial();
   haptics.tick();
@@ -303,7 +310,7 @@ startClassicBtn.addEventListener('click', () => {
   game.startNewGame('classic');
   titleScreen.classList.add('hidden');
   resumeBtn.classList.remove('hidden');
-  displayedScore = 0;
+  resetGameScore();
   syncUI();
   checkTutorial();
   haptics.tick();
@@ -380,7 +387,7 @@ restartBtn.addEventListener('click', (e) => {
   if (confirm('Start a new game?')) {
     if (settingsModal?.open) settingsModal.close();
     game.startNewGame(game.mode);
-    displayedScore = 0;
+    resetGameScore();
     syncUI();
     haptics.tick();
   }
@@ -607,7 +614,7 @@ closeDailyBtn.addEventListener('click', () => {
 startDailyBtn.addEventListener('click', () => {
   dailyModal.close();
   game.startNewGame('daily');
-  displayedScore = 0;
+  resetGameScore();
   syncUI();
   haptics.lineClear();
 });
@@ -621,7 +628,7 @@ dailyContinueBtn.addEventListener('click', () => {
 dailyFinishBtn.addEventListener('click', () => {
   dailyVictoryModal.close();
   game.startNewGame('classic');
-  displayedScore = 0;
+  resetGameScore();
   syncUI();
   haptics.tick();
 });
@@ -880,7 +887,7 @@ window.addEventListener('keydown', (e) => {
     if (!game.isGameOver) {
       if (confirm('Start a new game?')) {
         game.startNewGame(game.mode);
-        displayedScore = 0;
+        resetGameScore();
         syncUI();
       }
     }
@@ -901,6 +908,7 @@ function syncUI() {
     clearStuckTimer();
   }
   bestScoreText.textContent = game.bestScore.toLocaleString();
+  currentScoreText.textContent = displayedScore.toLocaleString();
   headerCoinsText.textContent = game.coins.toLocaleString();
 
   // Mode Tag & Banner
@@ -980,11 +988,18 @@ function syncUI() {
     modeBanner.classList.add('hidden');
   }
 
-  // Combo Banner with 3-Move Heartbeat Indicator
+  // Combo Banner with Drawn Flame 3-Move Grace Indicator
   if (game.combo >= 1) {
     comboBanner.classList.remove('hidden');
     comboText.textContent = `Combo x${game.combo}`;
     comboHearts.textContent = '🔥'.repeat(game.comboGraceMoves) + '⚪'.repeat(Math.max(0, 3 - game.comboGraceMoves));
+
+    const s1 = document.getElementById('comboSlot1');
+    const s2 = document.getElementById('comboSlot2');
+    const s3 = document.getElementById('comboSlot3');
+    if (s1) s1.className = `drawn-flame-slot ${game.comboGraceMoves >= 1 ? 'active' : 'inactive'}`;
+    if (s2) s2.className = `drawn-flame-slot ${game.comboGraceMoves >= 2 ? 'active' : 'inactive'}`;
+    if (s3) s3.className = `drawn-flame-slot ${game.comboGraceMoves >= 3 ? 'active' : 'inactive'}`;
 
     if (game.comboGraceMoves === 1) {
       comboBanner.classList.add('warning');
@@ -1034,7 +1049,7 @@ reviveBtn.addEventListener('click', () => {
 playAgainBtn.addEventListener('click', () => {
   gameOverModal.close();
   game.startNewGame(game.mode);
-  displayedScore = 0;
+  resetGameScore();
   syncUI();
 });
 
@@ -1358,6 +1373,8 @@ function gameLoop(now: number) {
     currentScoreText.textContent = displayedScore.toLocaleString();
   } else if (displayedScore > game.score) {
     displayedScore = game.score;
+    currentScoreText.textContent = displayedScore.toLocaleString();
+  } else if (currentScoreText.textContent !== displayedScore.toLocaleString()) {
     currentScoreText.textContent = displayedScore.toLocaleString();
   }
 

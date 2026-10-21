@@ -1,6 +1,6 @@
 # Google Play & App Store Listing Metadata: Brain Bloom
 
-> **Current Version**: `v1.0.3` (`versionCode: 4`)  
+> **Current Version**: `v1.0.4` (`versionCode: 5`)  
 > **Default In-Game Language**: English (`en-US`)
 
 ---
