@@ -40,9 +40,9 @@ if [ "$DEVICE_STATE" = "unavailable" ] || [ -z "$DEVICE_STATE" ]; then
   exit 1
 fi
 
-echo "🚀 Installing Block Blast Star onto Seunghwan's iPad..."
-rm -rf /tmp/BlockBlastStar.app
-cp -R "$APP_BUNDLE" /tmp/BlockBlastStar.app
-xcrun devicectl device install app --device "$IPAD_UDID" /tmp/BlockBlastStar.app
+echo "🚀 Installing Brain Bloom onto Seunghwan's iPad..."
+rm -rf /tmp/BrainBloom.app
+cp -R "$APP_BUNDLE" /tmp/BrainBloom.app
+xcrun devicectl device install app --device "$IPAD_UDID" /tmp/BrainBloom.app
 xcrun devicectl device process launch --device "$IPAD_UDID" "$BUNDLE_ID" || echo "ℹ️  아이패드 설정 > 일반 > VPN 및 기기 관리 > 개발자 앱(cromit@gmail.com)에서 '신뢰(Trust)'를 한 번 눌러주시면 바로 실행됩니다!"
-echo "🎉 Block Blast Star has been installed on your iPad!"
+echo "🎉 Brain Bloom has been installed on your iPad!"

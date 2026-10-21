@@ -1,6 +1,6 @@
-# Google Play & App Store Listing Metadata: Brain Bloom (Block Blast Star)
+# Google Play & App Store Listing Metadata: Brain Bloom
 
-> **Current Version**: `v1.0.2` (`versionCode: 3`)  
+> **Current Version**: `v1.0.3` (`versionCode: 4`)  
 > **Default In-Game Language**: English (`en-US`)
 
 ---

@@ -33,7 +33,7 @@ if (arg === 'major') {
   process.exit(1);
 }
 
-console.log(`\n📦 Bumping Block Blast Star: v${currentVersion} -> v${newVersion}\n`);
+console.log(`\n📦 Bumping Brain Bloom: v${currentVersion} -> v${newVersion}\n`);
 
 // 2. Update package.json
 pkg.version = newVersion;

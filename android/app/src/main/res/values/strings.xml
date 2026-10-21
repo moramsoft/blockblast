@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Block Blast Star</string>
-    <string name="title_activity_main">Block Blast Star</string>
+    <string name="app_name">Brain Bloom</string>
+    <string name="title_activity_main">Brain Bloom</string>
     <string name="package_name">com.blockblast.star</string>
     <string name="custom_url_scheme">com.blockblast.star</string>
 </resources>
