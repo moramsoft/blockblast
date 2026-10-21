@@ -1,6 +1,6 @@
 # Brain Bloom (Block Blast Star) 🌸⭐
 
-> **Current Version**: `v1.0.1` (Android `versionCode: 2` / iOS `CURRENT_PROJECT_VERSION: 2`)  
+> **Current Version**: `v1.0.2` (Android `versionCode: 3` / iOS `CURRENT_PROJECT_VERSION: 3`)  
 > **Default Language**: English (Global Casual & Active Senior Friendly UX)
 
 **Brain Bloom (Block Blast Star)**는 남녀노소 누구나—특히 액티브 시니어와 캐주얼 게이머도—직관적이고 편안하게 즐길 수 있도록 설계된 **8×8 블록 퍼즐 & 두뇌 트레이닝 게임**입니다. 웹 브라우저뿐만 아니라 Capacitor 기반의 **iOS / iPadOS 및 Android 네이티브 앱**으로 완벽하게 동작합니다.

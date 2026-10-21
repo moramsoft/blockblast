@@ -200,7 +200,25 @@ function handleResize() {
   renderer.resize(rect.width, rect.height, dpr);
 }
 
+// Multi-stage reflow helper for iPadOS app switching, rotation & split-view
+function scheduleResponsiveReflow() {
+  handleResize();
+  requestAnimationFrame(handleResize);
+  setTimeout(handleResize, 60);
+  setTimeout(handleResize, 180);
+  setTimeout(handleResize, 350);
+}
+
 window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', scheduleResponsiveReflow);
+window.addEventListener('pageshow', scheduleResponsiveReflow);
+window.addEventListener('focus', scheduleResponsiveReflow);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    scheduleResponsiveReflow();
+  }
+});
+
 if (typeof ResizeObserver !== 'undefined') {
   new ResizeObserver(handleResize).observe(canvas);
 }
@@ -1341,6 +1359,19 @@ function gameLoop(now: number) {
   } else if (displayedScore > game.score) {
     displayedScore = game.score;
     currentScoreText.textContent = displayedScore.toLocaleString();
+  }
+
+  // Self-healing check for iPadOS/iOS app-switching & multitasking:
+  // If the canvas buffer size desynchronizes from client dimensions or DPR changes, auto-recover instantly
+  const clientW = canvas.clientWidth;
+  const clientH = canvas.clientHeight;
+  if (clientW > 0 && clientH > 0) {
+    const curDpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    const expectedW = Math.round(clientW * curDpr);
+    const expectedH = Math.round(clientH * curDpr);
+    if (canvas.width !== expectedW || canvas.height !== expectedH || renderer.getDpr() !== curDpr) {
+      renderer.resize(clientW, clientH, curDpr);
+    }
   }
 
   game.update(dt, (c, r) => renderer.getCellCoord(c, r));

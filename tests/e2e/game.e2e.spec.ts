@@ -641,4 +641,84 @@ test.describe('Block Blast Star - Cross-Platform (Android & iOS) Full E2E Suite'
     await page.mouse.click(10, 10);
     await expect(page.locator('#boosterTooltip')).toHaveClass(/hidden/);
   });
+
+  test('E2E-19: iPad Multitasking & App Switching Background Recovery (Zero Top-Left Shrink)', async ({ page }) => {
+    // 1. Enter in-game
+    await page.locator('#homeBtn').click();
+    await page.locator('#startRelaxedBtn').click();
+    await page.waitForTimeout(300);
+
+    // 2. Measure healthy initial canvas & layout geometry
+    const initialMetrics = await page.evaluate(() => {
+      const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+      const b = window.__BLOCK_BLAST_TEST__!;
+      const rect = canvas.getBoundingClientRect();
+      const layout = b.renderer.layout;
+      return {
+        canvasW: canvas.width,
+        canvasH: canvas.height,
+        clientW: rect.width,
+        clientH: rect.height,
+        boardX: layout.boardX,
+        boardSize: layout.boardSize,
+        dpr: b.renderer.getDpr(),
+      };
+    });
+
+    expect(initialMetrics.clientW).toBeGreaterThan(0);
+    expect(initialMetrics.boardSize).toBeGreaterThan(100);
+
+    // 3. Simulate iPadOS WebKit backgrounding:
+    // (a) Context transform reset to identity (1, 1) by GPU memory eviction
+    // (b) Visibility change to 'hidden' then returning to 'visible'
+    await page.evaluate(() => {
+      const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d')!;
+      // Simulate WebKit GPU memory purge reset to 1x identity
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      // Trigger visibilitychange to hidden (app backgrounded)
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', writable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    });
+
+    await page.waitForTimeout(200);
+
+    // 4. Return to foreground (visibilitychange to 'visible' and pageshow)
+    await page.evaluate(() => {
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', writable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+      window.dispatchEvent(new Event('pageshow'));
+      window.dispatchEvent(new Event('focus'));
+    });
+
+    await page.waitForTimeout(400);
+
+    // 5. Verify that the self-healing and lifecycle handlers fully restored dimensions & transform
+    const restoredMetrics = await page.evaluate(() => {
+      const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
+      const ctx = canvas.getContext('2d')!;
+      const b = window.__BLOCK_BLAST_TEST__!;
+      const rect = canvas.getBoundingClientRect();
+      const layout = b.renderer.layout;
+      const transform = ctx.getTransform();
+      return {
+        canvasW: canvas.width,
+        canvasH: canvas.height,
+        clientW: rect.width,
+        clientH: rect.height,
+        boardX: layout.boardX,
+        boardSize: layout.boardSize,
+        dpr: b.renderer.getDpr(),
+        transformA: transform.a, // horizontal scale (should equal dpr)
+        transformD: transform.d, // vertical scale (should equal dpr)
+      };
+    });
+
+    // The context transform scale MUST equal the DPR, NOT 1 (preventing top-left shrinking)
+    expect(restoredMetrics.dpr).toBe(restoredMetrics.transformA);
+    expect(restoredMetrics.dpr).toBe(restoredMetrics.transformD);
+    expect(restoredMetrics.boardSize).toBe(initialMetrics.boardSize);
+    expect(restoredMetrics.canvasW).toBe(Math.round(restoredMetrics.clientW * restoredMetrics.dpr));
+  });
 });

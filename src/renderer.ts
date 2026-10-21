@@ -20,6 +20,7 @@ export class GameRenderer {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
   private animTime: number = 0;
+  private dpr: number = 1;
   public hammerHoverCoords: { c: number; r: number } | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
@@ -29,10 +30,15 @@ export class GameRenderer {
   }
 
   public resize(width: number, height: number, dpr: number) {
-    this.canvas.width = width * dpr;
-    this.canvas.height = height * dpr;
+    this.dpr = dpr;
+    this.canvas.width = Math.round(width * dpr);
+    this.canvas.height = Math.round(height * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.layout = this.computeLayout(width, height);
+  }
+
+  public getDpr(): number {
+    return this.dpr;
   }
 
   public computeLayout(width: number, height: number): LayoutInfo {
@@ -100,6 +106,12 @@ export class GameRenderer {
     this.animTime += dt;
     const { width, height } = this.layout;
     const ctx = this.ctx;
+
+    // Critical (iPadOS/iOS WebKit fix):
+    // When switching apps or backgrounding on iPad, WebKit reallocates the canvas backing store,
+    // which resets the 2D context transform to the identity matrix (1, 0, 0, 1).
+    // Always enforce the current DPR transform before drawing so the game is never shrunk to the top-left!
+    ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
 
     ctx.save();
     if (game.screenShake > 0) {

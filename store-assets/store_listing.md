@@ -1,6 +1,6 @@
 # Google Play & App Store Listing Metadata: Brain Bloom (Block Blast Star)
 
-> **Current Version**: `v1.0.1` (`versionCode: 2`)  
+> **Current Version**: `v1.0.2` (`versionCode: 3`)  
 > **Default In-Game Language**: English (`en-US`)
 
 ---
@@ -81,6 +81,13 @@ Download Brain Bloom today and let your mind blossom one block at a time!
 ---
 
 ## 4. Release Notes (What's New)
+
+### v1.0.2 (Build 3)
+```text
+What's New in v1.0.2:
+• iPad App-Switching & Multitasking Recovery: Fixed WebKit canvas backing store reset issue where the game screen could occasionally shrink into the top-left corner after returning from another app.
+• Added automatic canvas scale and DPR self-healing checks on app foreground, visibility change, and split-view resize.
+```
 
 ### v1.0.1 (Build 2)
 ```text
