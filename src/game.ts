@@ -104,6 +104,10 @@ export class BlockBlastGame {
   public achievements: Achievement[];
   public newlyUnlockedAchievements: Achievement[] = [];
 
+  // Garden Bloom Progression
+  public bloomPoints: number = 0;
+  public lastBloomStage: number = 1;
+
   // Senior & Accessibility Assist System (Free trial for first moves, then coin monetization)
   public lastMoveSnapshot: MoveSnapshot | null = null;
   public activeHint: MoveHint | null = null;
@@ -254,6 +258,8 @@ export class BlockBlastGame {
     this.dailyGoalMet = false;
     this.boosterUsageThisGame = { rotate: 0, shuffle: 0, hammer: 0 };
     this.particles.clear();
+    this.bloomPoints = 0;
+    this.lastBloomStage = 1;
 
     // Reset Senior & Assist state
     this.lastMoveSnapshot = null;
@@ -282,6 +288,31 @@ export class BlockBlastGame {
     this.checkAchievements();
 
     this.dealNewShapes();
+  }
+
+  public getBloomStage(): { stage: 1 | 2 | 3 | 4; name: string; progress: number; iconUrl: string } {
+    if (this.combo >= 4) {
+      return { stage: 4, name: '🌸 Brain Bloom!', progress: 1.0, iconUrl: '/img/bloom-stage-4.svg' };
+    }
+    if (this.combo >= 2) {
+      return { stage: 3, name: '🌷 Budding', progress: 0.75, iconUrl: '/img/bloom-stage-3.svg' };
+    }
+    if (this.combo === 1) {
+      return { stage: 2, name: '🌿 Growing', progress: 0.5, iconUrl: '/img/bloom-stage-2.svg' };
+    }
+
+    if (this.bloomPoints >= 240) {
+      return { stage: 4, name: '🌸 Brain Bloom!', progress: 1.0, iconUrl: '/img/bloom-stage-4.svg' };
+    } else if (this.bloomPoints >= 140) {
+      const p = (this.bloomPoints - 140) / 100;
+      return { stage: 3, name: '🌷 Budding', progress: Math.min(1, 0.5 + p * 0.5), iconUrl: '/img/bloom-stage-3.svg' };
+    } else if (this.bloomPoints >= 60) {
+      const p = (this.bloomPoints - 60) / 80;
+      return { stage: 2, name: '🌿 Growing', progress: Math.min(1, 0.25 + p * 0.25), iconUrl: '/img/bloom-stage-2.svg' };
+    } else {
+      const p = this.bloomPoints / 60;
+      return { stage: 1, name: '🌱 Sprout', progress: Math.min(1, p * 0.25), iconUrl: '/img/bloom-stage-1.svg' };
+    }
   }
 
   // Generate a symmetrical aesthetic challenge board pattern for Daily Mode
@@ -643,6 +674,7 @@ export class BlockBlastGame {
     }
 
     this.stats.blocksPlaced += tileCount;
+    this.bloomPoints += tileCount * 2;
 
     // Remove from dock
     this.dock[dockIndex] = null;
@@ -746,11 +778,25 @@ export class BlockBlastGame {
       // Base: 10 coins per line + combo bonus
       const coinsEarned = totalLines * 10 + (this.combo > 1 ? this.combo * 5 : 0);
       this.addCoins(coinsEarned);
+      this.bloomPoints += totalLines * 20 + this.combo * 15;
 
       // Milestone score check (earn +50 coins every 500 score points)
       if (Math.floor(this.score / 500) > Math.floor((this.score - earned) / 500)) {
         this.addCoins(50);
         this.particles.addFloatingText('+50 COINS!', 'MILESTONE!', centroidX, centroidY - 40, '#ffd600');
+      }
+
+      // Check Garden Bloom progression
+      const currentBloom = this.getBloomStage();
+      if (currentBloom.stage > this.lastBloomStage) {
+        this.lastBloomStage = currentBloom.stage;
+        this.particles.spawnBloomPetals(centroidX, centroidY, 18);
+        if (currentBloom.stage === 4) {
+          this.addCoins(30);
+          sound.playAchievement();
+          this.particles.addShockwave(centroidX, centroidY, 220, '#ff6fa8');
+          this.particles.addFloatingText('🌸 BRAIN BLOOM!', '+30 BONUS 🪙', centroidX, centroidY - 45, '#ff6fa8');
+        }
       }
 
       // Check for ALL CLEAR (64 cells completely clean!)
@@ -775,6 +821,7 @@ export class BlockBlastGame {
         haptics.combo(6);
         this.screenShake = 16 * (this.comfortMode ? 0.35 : 1.0);
         this.particles.addShockwave(centroidX, centroidY, 260, '#ffd600');
+        this.particles.spawnBloomPetals(centroidX, centroidY, 28);
         this.particles.addFloatingText('🌟 ALL CLEAR! 🌟', `+${allClearBonus} PTS & +${allClearCoins} 🪙`, centroidX, centroidY - 20, '#ffd600');
       } else {
         // Immediate audio and floating text response
@@ -782,8 +829,10 @@ export class BlockBlastGame {
         if (this.combo >= 2) {
           sound.playCombo(this.combo);
           haptics.combo(this.combo);
+          this.particles.spawnBloomPetals(centroidX, centroidY, Math.min(24, 8 + this.combo * 4));
         } else {
           haptics.lineClear();
+          this.particles.spawnBloomPetals(centroidX, centroidY, 6);
         }
 
         this.screenShake = Math.min(3 + totalLines * 2.5 + (this.combo > 2 ? 3 : 0), 14) * (this.comfortMode ? 0.35 : 1.0);
@@ -794,10 +843,15 @@ export class BlockBlastGame {
         else if (totalLines === 4) shout = 'SUPERB!';
         else if (totalLines >= 5) shout = 'UNBELIEVABLE!';
 
+        let bloomCallout = '🌱 SPROUT!';
+        if (this.combo === 2) bloomCallout = '🌿 GROWING!';
+        else if (this.combo === 3) bloomCallout = '🌷 BUDDING!';
+        else if (this.combo >= 4) bloomCallout = '🌸 BRAIN BLOOM!';
+
         if (this.combo >= 2) {
           this.particles.addFloatingText(
             `COMBO x${this.combo}`,
-            `${shout} +${earned} (+${coinsEarned} 🪙)`,
+            `${bloomCallout} +${earned} (+${coinsEarned} 🪙)`,
             centroidX,
             centroidY,
             '#ffd600'
@@ -805,7 +859,7 @@ export class BlockBlastGame {
         } else {
           this.particles.addFloatingText(
             shout,
-            `+${earned} (+${coinsEarned} 🪙)`,
+            `${bloomCallout} +${earned} (+${coinsEarned} 🪙)`,
             centroidX,
             centroidY,
             '#00e5ff'
@@ -1629,6 +1683,7 @@ export class BlockBlastGame {
           item.popped = true;
           const pos = getCellCoord(item.c, item.r);
           this.particles.explodeBlock(pos.x, pos.y, item.cell.color, pos.size);
+          this.particles.spawnBloomPetals(pos.x + pos.size / 2, pos.y + pos.size / 2, 3);
           sound.playDominoPop(i, totalInWave);
           haptics.tick();
         }

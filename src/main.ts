@@ -88,6 +88,12 @@ const comboBanner = document.getElementById('comboBanner') as HTMLDivElement;
 const comboText = document.getElementById('comboText') as HTMLSpanElement;
 const comboHearts = document.getElementById('comboHearts') as HTMLSpanElement;
 
+// Garden Bloom Sprout Companion Elements
+const bloomCompanion = document.getElementById('bloomCompanion') as HTMLDivElement;
+const bloomStageImg = document.getElementById('bloomStageImg') as HTMLImageElement;
+const bloomStageTitle = document.getElementById('bloomStageTitle') as HTMLSpanElement;
+const bloomMeterFill = document.getElementById('bloomMeterFill') as HTMLDivElement;
+
 // Stuck / Rescue Modal Elements
 const stuckModal = document.getElementById('stuckModal') as HTMLDialogElement;
 const rescueHammerBtn = document.getElementById('rescueHammerBtn') as HTMLButtonElement;
@@ -336,6 +342,17 @@ homeBtn.addEventListener('click', (e) => {
   resumeBtn.classList.remove('hidden');
   haptics.tick();
 });
+
+if (bloomCompanion) {
+  bloomCompanion.addEventListener('click', (e) => {
+    e.stopPropagation();
+    bloomCompanion.classList.remove('pop');
+    void bloomCompanion.offsetWidth; // trigger reflow for animation restart
+    bloomCompanion.classList.add('pop');
+    game.particles.spawnBloomPetals(renderer.layout.width / 2, 70, 10);
+    haptics.tick();
+  });
+}
 
 const titleThemeBtn = document.getElementById('titleThemeBtn');
 if (titleThemeBtn) {
@@ -1009,6 +1026,25 @@ function syncUI() {
   } else {
     comboBanner.classList.add('hidden');
     comboBanner.classList.remove('warning');
+  }
+
+  // Garden Bloom Sprout Companion Sync
+  if (bloomCompanion && bloomStageImg && bloomStageTitle && bloomMeterFill) {
+    const bloom = game.getBloomStage();
+    bloomStageImg.src = bloom.iconUrl;
+    bloomStageTitle.textContent = bloom.name;
+    bloomMeterFill.style.width = `${Math.round(bloom.progress * 100)}%`;
+
+    // Show bloom companion during normal play when no transient banner is active
+    if (
+      game.combo >= 1 ||
+      !tutorialBanner.classList.contains('hidden') ||
+      !modeBanner.classList.contains('hidden')
+    ) {
+      bloomCompanion.classList.add('hidden');
+    } else {
+      bloomCompanion.classList.remove('hidden');
+    }
   }
 }
 

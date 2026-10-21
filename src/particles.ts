@@ -28,6 +28,31 @@ export class ParticleSystem {
     }
   }
 
+  public spawnBloomPetals(x: number, y: number, count: number = 8) {
+    const petalColors = ['#ff6fa8', '#f472b6', '#fbcfe8', '#fde047', '#ff80bf', '#86efac'];
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.8;
+      const speed = Math.random() * 110 + 40;
+      const color = petalColors[Math.floor(Math.random() * petalColors.length)];
+      this.particles.push({
+        x: x + (Math.random() - 0.5) * 16,
+        y: y + (Math.random() - 0.5) * 16,
+        vx: Math.cos(angle) * speed,
+        vy: -Math.random() * 80 - 30, // gentle upward floating kick
+        size: Math.random() * 5 + 6, // 6 - 11px
+        color,
+        alpha: 1,
+        rotation: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 4,
+        life: 0,
+        maxLife: Math.random() * 0.6 + 0.8, // 0.8 - 1.4s
+        isPetal: true,
+        swayFreq: Math.random() * 3 + 4,
+        swayAmp: Math.random() * 35 + 20,
+      });
+    }
+  }
+
   public addShockwave(x: number, y: number, maxRadius: number = 180, color: string = '#ffd600') {
     this.shockwaves.push({
       x,
@@ -67,11 +92,20 @@ export class ParticleSystem {
         this.particles.splice(i, 1);
         continue;
       }
-      p.x += p.vx * dt;
-      p.y += p.vy * dt;
-      p.vy += gravity * dt;
-      p.rotation += p.vRot * dt;
-      p.alpha = Math.max(0, 1 - p.life / p.maxLife);
+      if (p.isPetal) {
+        p.x += (p.vx + Math.sin(p.life * (p.swayFreq || 5)) * (p.swayAmp || 30)) * dt;
+        p.vx *= 0.96;
+        p.vy = Math.min(p.vy + 120 * dt, 110);
+        p.y += p.vy * dt;
+        p.rotation += p.vRot * dt;
+        p.alpha = Math.max(0, 1 - p.life / p.maxLife);
+      } else {
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += gravity * dt;
+        p.rotation += p.vRot * dt;
+        p.alpha = Math.max(0, 1 - p.life / p.maxLife);
+      }
     }
 
     // Update shockwaves
@@ -137,7 +171,21 @@ export class ParticleSystem {
       ctx.rotate(p.rotation);
       ctx.fillStyle = p.color;
 
-      if (p.isStar) {
+      if (p.isPetal) {
+        // Draw organic blooming flower petal (teardrop / gentle curve)
+        const s = p.size;
+        ctx.beginPath();
+        ctx.moveTo(0, -s * 1.25);
+        ctx.bezierCurveTo(s * 0.9, -s * 0.6, s * 0.8, s * 0.85, 0, s * 1.15);
+        ctx.bezierCurveTo(-s * 0.8, s * 0.85, -s * 0.9, -s * 0.6, 0, -s * 1.25);
+        ctx.fill();
+
+        // Subtle glowing center vein / highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
+        ctx.beginPath();
+        ctx.ellipse(0, -s * 0.2, s * 0.22, s * 0.5, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.isStar) {
         // Draw 4-point star sparkle
         const r = p.size;
         ctx.beginPath();

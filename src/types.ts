@@ -59,6 +59,9 @@ export interface Particle {
   life: number;
   maxLife: number;
   isStar?: boolean;
+  isPetal?: boolean;
+  swayFreq?: number;
+  swayAmp?: number;
 }
 
 export interface Shockwave {

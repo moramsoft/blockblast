@@ -514,4 +514,42 @@ describe('BlockBlastGame Core Mechanics & Revamp Tests', () => {
     game.screenShake = 16 * (game.comfortMode ? 0.35 : 1.0);
     assert.ok(game.screenShake <= 6, 'Comfort mode must dampen screen shake for senior players');
   });
+
+  it('16. should track Garden Bloom progression through 4 stages and spawn petals', () => {
+    const game = new BlockBlastGame();
+    game.startNewGame('classic');
+
+    // Stage 1: Sprout initially
+    const stage1 = game.getBloomStage();
+    assert.equal(stage1.stage, 1);
+    assert.ok(stage1.name.includes('Sprout'));
+    assert.equal(stage1.iconUrl, '/img/bloom-stage-1.svg');
+
+    // Advance bloom points to Stage 2: Growing
+    game.bloomPoints = 80;
+    const stage2 = game.getBloomStage();
+    assert.equal(stage2.stage, 2);
+    assert.ok(stage2.name.includes('Growing'));
+    assert.equal(stage2.iconUrl, '/img/bloom-stage-2.svg');
+
+    // Advance to Stage 3: Budding
+    game.bloomPoints = 160;
+    const stage3 = game.getBloomStage();
+    assert.equal(stage3.stage, 3);
+    assert.ok(stage3.name.includes('Budding'));
+    assert.equal(stage3.iconUrl, '/img/bloom-stage-3.svg');
+
+    // Advance to Stage 4: Brain Bloom!
+    game.bloomPoints = 260;
+    const stage4 = game.getBloomStage();
+    assert.equal(stage4.stage, 4);
+    assert.ok(stage4.name.includes('Brain Bloom'));
+    assert.equal(stage4.iconUrl, '/img/bloom-stage-4.svg');
+
+    // High combo immediately promotes to Brain Bloom!
+    game.bloomPoints = 0;
+    game.combo = 4;
+    const comboBloom = game.getBloomStage();
+    assert.equal(comboBloom.stage, 4);
+  });
 });

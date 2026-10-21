@@ -1,9 +1,22 @@
 # Brain Bloom (Block Blast Star) 🌸⭐
 
-> **Current Version**: `v1.0.2` (Android `versionCode: 3` / iOS `CURRENT_PROJECT_VERSION: 3`)  
+> **Current Version**: `v1.0.6` (Android `versionCode: 7` / iOS `CURRENT_PROJECT_VERSION: 7`)  
 > **Default Language**: English (Global Casual & Active Senior Friendly UX)
 
 **Brain Bloom (Block Blast Star)**는 남녀노소 누구나—특히 액티브 시니어와 캐주얼 게이머도—직관적이고 편안하게 즐길 수 있도록 설계된 **8×8 블록 퍼즐 & 두뇌 트레이닝 게임**입니다. 웹 브라우저뿐만 아니라 Capacitor 기반의 **iOS / iPadOS 및 Android 네이티브 앱**으로 완벽하게 동작합니다.
+
+---
+
+## 🌸 가든 블룸 성장 & 꽃 피우기 시스템 (Garden Bloom System)
+
+게임 타이틀인 **Brain Bloom**의 정체성에 맞춰, 블록을 맞추고 라인을 클리어할수록 귀여운 싹이 자라나 화려한 꽃으로 만개하는 가든 성장 메커니즘을 제공합니다:
+
+1. **🌱 1단계: 새싹 (Sprout)**: 게임 시작 시 흙 위로 귀여운 새싹과 이슬방울이 돋아납니다.
+2. **🌿 2단계: 줄기 성장 (Growing Stem)**: 블록을 배치하고 라인을 클리어하면 줄기가 뻗어나가며 싱그러운 잎이 자라납니다.
+3. **🌷 3단계: 꽃봉오리 (Budding Blossom)**: 콤보를 이어가면 금빛 마법 꽃가루와 함께 통통한 꽃봉오리가 맺힙니다.
+4. **🌸 4단계: 만개 (Radiant Brain Bloom!)**: 4연속 콤보 또는 가든 포인트 충족 시 화려한 꽃이 활짝 만개하며 **+30 코인 보너스**, 충격파, 벚꽃잎 팡파르가 터집니다!
+5. **🍃 꽃잎 흩날림 파티클 (Fluttering Petal Particles)**: 라인 클리어 및 도미노 캐스케이드 팝이 일어날 때마다 로즈 핑크·체리블라썸·민트 잎 꽃잎들이 중력과 공기 저항, 부드러운 바람에 흔들리며 우아하게 흩날립니다.
+6. **상단 가든 스위트 위젯 (`#bloomCompanion`)**: 상단 바에 현재 싹의 성장 단계와 게이지 바가 직관적으로 표시되며, 탭하면 귀여운 점프 애니메이션과 꽃잎이 흩날립니다.
 
 ---
 
